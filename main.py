@@ -11,21 +11,30 @@ class Main:
     def update(self):
         self.snake.snake_moving()
         self.check_collision()
+        self.draw_elements()
         self.check_gameover()
+
         
     def draw_elements(self):
         self.fruit.draw_fruit()
         self.snake.draw_snake()
         
     def check_collision(self):
-        if self.fruit.pos== self.snake.body[0]:
-            self.fruit.randomize()
-            
+
+        snake_head_rect = pygame.Rect(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40), 40, 40)
+
+    
+        if snake_head_rect.colliderect(self.fruit.rect):
+            self.fruit.randomize() 
             self.snake.add_block()
+        #if self.fruit.pos== self.snake.body[0]:
+         #   self.fruit.randomize()
+            
+          #  self.snake.add_block()
         
     def check_gameover(self):
-        for block in self.snake[1:]:
-            if block==self.snake[0]:
+        for block in self.snake.body[1:]:
+            if block==self.snake.body[0]:
                 self.game_over()
                 
                 
@@ -33,23 +42,25 @@ class Main:
             self.game_over()
     
     def game_over(self):
-        pygame.QUIT()
+        pygame.quit()
         sys.exit()
         
 
 class Fruits:
     def __init__(self):
-        self.x= random.randint(0,39)
-        self.y= random.randint(0,39)
+        self.x= random.randint(0,18)
+        self.y= random.randint(0,18)
         self.pos=Vector2(self.x,self.y)
         
     def draw_fruit(self):
-        fruit_rect=pygame.Rect(int(self.pos.x*40) ,int(self.pos.y*40) ,40,40)
-        pygame.draw.rect(game_screen,(126,166,114),fruit_rect)
+        apple = pygame.image.load("Project/Snake-game-project/apple1.png").convert_alpha()
+        scaled_apple = pygame.transform.scale(apple, (40, 40))
+        self.rect = scaled_apple.get_rect(topleft = (int(self.pos.x*40), int(self.pos.y*40)))
+        game_screen.blit(scaled_apple, self.rect)
         
     def randomize(self):
-        self.x= random.randint(0,39)
-        self.y= random.randint(0,39)
+        self.x= random.randint(0,19)
+        self.y= random.randint(0,19)
         self.pos=Vector2(self.x,self.y)
         
 class Snake:
@@ -59,11 +70,23 @@ class Snake:
         self.new_block=False
         
     def draw_snake(self):
-        for block in self.body:
+        for index, block in enumerate(self.body):
             x=int(block.x *40)
             y=int(block.y*40)
             block_rect=pygame.Rect(x,y,40,40)
-            pygame.draw.rect(game_screen,(183,110,122),block_rect)  
+            if index == 0:  # Head of the snake               
+                # Determine which corners to round based on direction
+                if self.direction == Vector2(1, 0):  # Moving right
+                    pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
+                elif self.direction == Vector2(-1, 0):  # Moving left
+                    pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
+                elif self.direction == Vector2(0, -1):  # Moving up
+                    pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_left_radius=10, border_top_right_radius= 10)  # Top-left corner
+                elif self.direction == Vector2(0, 1):  # Moving down
+                    pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_bottom_left_radius=10, border_bottom_right_radius= 10)  # Bottom-left corner
+
+            else:  # Other blocks without rounded corners
+                pygame.draw.rect(game_screen, (183, 110, 122), block_rect) 
             
     def snake_moving(self):
         if self.new_block==True:
@@ -85,6 +108,7 @@ class Snake:
 pygame.init()
 game_screen=pygame.display.set_mode((800,800))
 surface=pygame.Surface((400,400))
+game_state = True
 
 
 # fruit=Fruits()
