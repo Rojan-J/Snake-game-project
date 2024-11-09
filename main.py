@@ -11,6 +11,7 @@ class Main:
     def update(self):
         self.snake.snake_moving()
         self.check_collision()
+        self.check_gameover()
         
     def draw_elements(self):
         self.fruit.draw_fruit()
@@ -22,7 +23,19 @@ class Main:
             
             self.snake.add_block()
         
+    def check_gameover(self):
+        for block in self.snake[1:]:
+            if block==self.snake[0]:
+                self.game_over()
+                
+                
+        if not 0<= self.snake.body[0].y < 20 or not 0<= self.snake.body[0].x < 20:
+            self.game_over()
     
+    def game_over(self):
+        pygame.QUIT()
+        sys.exit()
+        
 
 class Fruits:
     def __init__(self):
@@ -41,7 +54,7 @@ class Fruits:
         
 class Snake:
     def __init__(self):
-        self.body = [Vector2(5,10),Vector2(6,10),Vector2(7,10)]
+        self.body = [Vector2(5,10),Vector2(4,10),Vector2(3,10)]
         self.direction = Vector2(1,0)
         self.new_block=False
         
@@ -96,18 +109,21 @@ while True:
         #keyboard setting to move the snake
         if event.type ==pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
-                main.snake.direction=Vector2(1,0)
+                if main.snake.direction.y !=-1:
+                    main.snake.direction=Vector2(1,0)
             if event.key == pygame.K_LEFT:
-                main.snake.direction=Vector2(-1,0)
+                if main.snake.direction.y !=1:
+                    main.snake.direction=Vector2(-1,0)
             if event.key == pygame.K_UP:
-                main.snake.direction=Vector2(0,-1)
+                if main.snake.direction.y !=1:
+                    main.snake.direction=Vector2(0,-1)
             if event.key == pygame.K_DOWN:
-                main.snake.direction=Vector2(0,1)
+                if main.snake.direction.y !=-1:
+                    main.snake.direction=Vector2(0,1)
                 
             
             
     game_screen.fill((20,120,150))   
-    
     main.draw_elements()
     
     
