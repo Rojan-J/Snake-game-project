@@ -109,10 +109,10 @@ while True:
         #keyboard setting to move the snake
         if event.type ==pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
-                if main.snake.direction.y !=-1:
+                if main.snake.direction.x !=-1:
                     main.snake.direction=Vector2(1,0)
             if event.key == pygame.K_LEFT:
-                if main.snake.direction.y !=1:
+                if main.snake.direction.x !=1:
                     main.snake.direction=Vector2(-1,0)
             if event.key == pygame.K_UP:
                 if main.snake.direction.y !=1:
