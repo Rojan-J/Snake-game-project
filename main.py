@@ -72,10 +72,18 @@ class Snake:
         close_eyes = pygame.image.load("Project/Snake-game-project/eye_closed.png").convert_alpha()
         close_eyes_scaled = pygame.transform.scale(close_eyes, (40, 40))         
         
+        tongue = pygame.image.load("Project/Snake-game-project/tongue.png").convert_alpha()
+        tongue_scaled = pygame.transform.scale(tongue, (40, 40))
+
+
+
+    
         self.body = [Vector2(5,10),Vector2(4,10),Vector2(3,10)]
         self.direction = Vector2(1,0)
         self.new_block=False
         self.eyes = [open_eyes_scaled, close_eyes_scaled]
+        self.tongue = tongue_scaled
+        self.tongue_index = 0
         self.eyes_index = 0
         
     def draw_snake(self):
@@ -91,24 +99,59 @@ class Snake:
                     pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
+                    if int(self.tongue_index) == 0:
+                        rotated_tongue = pygame.transform.rotate(self.tongue, 180)
+                        pygame.draw.circle(game_screen, "Black", (x + 35, y+25), 5, 5)
+                        tongue_rect = rotated_tongue.get_rect(midleft = (x + 35, y+ 20))
+                        game_screen.blit(rotated_tongue, tongue_rect)
+
+                    else:
+                        pygame.draw.line(game_screen, "Black", (x+20, y+ 25), (x+ 40, y +25), 3)
+
 
                     
                 elif self.direction == Vector2(-1, 0):  # Moving left
                     pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
+                    if int(self.tongue_index) == 0:
+                        pygame.draw.circle(game_screen, "Black", (x +5, y+25), 5, 5)
+                        rotated_tongue= pygame.transform.rotate(self.tongue, 0)
+                        tongue_rect = rotated_tongue.get_rect(midright = (x + 6, y+ 30))
+                        game_screen.blit(rotated_tongue, tongue_rect)
+
+                    else:
+                        pygame.draw.line(game_screen, "Black", (x+20, y+ 25), (x, y +25), 3)
 
 
                 elif self.direction == Vector2(0, -1):  # Moving up
                     pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_left_radius=10, border_top_right_radius= 10)  # Top-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], -90)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 35, y +20))
+                    
+                    if int(self.tongue_index) == 0:
+                        pygame.draw.circle(game_screen, "Black", (x +15, y+5), 5, 5)
+                        rotated_tongue= pygame.transform.rotate(self.tongue, -90)
+                        tongue_rect = rotated_tongue.get_rect(midbottom = (x + 8, y+ 10))
+                        game_screen.blit(rotated_tongue, tongue_rect)
+
+                    else:
+                        pygame.draw.line(game_screen, "Black", (x+10, y+ 20), (x + 10, y), 3)
 
 
                 elif self.direction == Vector2(0, 1):  # Moving down
                     pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_bottom_left_radius=10, border_bottom_right_radius= 10)  # Bottom-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], -90)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 35, y +20))
+
+                    if int(self.tongue_index) == 0:
+                        pygame.draw.circle(game_screen, "Black", (x +15, y+35), 5, 5)
+                        rotated_tongue= pygame.transform.rotate(self.tongue, 90)
+                        tongue_rect = rotated_tongue.get_rect(midtop = (x + 20, y+ 32))
+                        game_screen.blit(rotated_tongue, tongue_rect)
+
+                    else:
+                        pygame.draw.line(game_screen, "Black", (x+10, y+ 20), (x + 10, y+40), 3)
                     
 
 
@@ -116,6 +159,9 @@ class Snake:
                 if int(self.eyes_index) == 0: self.eyes_index += 0.02
                 else: self.eyes_index += 0.05
                 if self.eyes_index > 2: self.eyes_index = 0
+
+                self.tongue_index += 0.02
+                if self.tongue_index > 2: self.tongue_index = 0
 
 
             else:  # Other blocks without rounded corners
