@@ -5,6 +5,7 @@ from pygame.math import Vector2
 import math
 
 class Main:
+    
     def __init__(self):
         self.snake=Snake()
         self.fruit=Fruits()  
@@ -13,7 +14,7 @@ class Main:
         self.snake.snake_moving()
         self.check_collision()
         self.draw_elements()
-        self.check_gameover()
+        #self.check_gameover()
 
         
     def draw_elements(self):
@@ -33,18 +34,17 @@ class Main:
             
           #  self.snake.add_block()
         
-    def check_gameover(self):
-        for block in self.snake.body[1:]:
-            if block==self.snake.body[0]:
-                self.game_over()
+    #def check_gameover(self):
+     #   for block in self.snake.body[1:]:
+      #      if block==self.snake.body[0]:
+       #         self.game_over()
                 
                 
-        if not 0<= self.snake.body[0].y < 20 or not 0<= self.snake.body[0].x < 20:
-            self.game_over()
+        #if not 0<= self.snake.body[0].y < 20 or not 0<= self.snake.body[0].x < 20:
+         #   self.game_over()
     
-    def game_over(self):
-        pygame.quit()
-        sys.exit()
+    #def game_over(self):
+        #self.game_state = False
         
 
 class Fruits:
@@ -96,7 +96,7 @@ class Snake:
             if index == 0:  # Head of the snake               
                 # Determine which corners to round based on direction
                 if self.direction == Vector2(1, 0):  # Moving right
-                    pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
+                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
                     if int(self.tongue_index) == 0:
@@ -111,7 +111,7 @@ class Snake:
 
                     
                 elif self.direction == Vector2(-1, 0):  # Moving left
-                    pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
+                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
                     if int(self.tongue_index) == 0:
@@ -125,7 +125,7 @@ class Snake:
 
 
                 elif self.direction == Vector2(0, -1):  # Moving up
-                    pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_left_radius=10, border_top_right_radius= 10)  # Top-left corner
+                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_top_left_radius=10, border_top_right_radius= 10)  # Top-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], -90)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 35, y +20))
                     
@@ -140,7 +140,7 @@ class Snake:
 
 
                 elif self.direction == Vector2(0, 1):  # Moving down
-                    pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_bottom_left_radius=10, border_bottom_right_radius= 10)  # Bottom-left corner
+                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_bottom_left_radius=10, border_bottom_right_radius= 10)  # Bottom-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], -90)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 35, y +20))
 
@@ -165,7 +165,7 @@ class Snake:
 
 
             else:  # Other blocks without rounded corners
-                pygame.draw.rect(game_screen, (183, 110, 122), block_rect) 
+                pygame.draw.rect(game_screen, "#5a6f19", block_rect) 
             
     def snake_moving(self):
         if self.new_block==True:
@@ -184,10 +184,22 @@ class Snake:
     def add_block(self):
         self.new_block=True
 
+game_state = True
+
+def check_game_over(main):
+    global game_state
+    for block in main.snake.body[1:]:
+        if block == main.snake.body[0]:
+            game_state = False
+    if not 0<= main.snake.body[0].y < 20 or not 0<= main.snake.body[0].x < 20:
+        game_state = False
+
 pygame.init()
 game_screen=pygame.display.set_mode((800,800))
 surface=pygame.Surface((400,400))
-game_state = True
+background = pygame.image.load("Project/Snake-game-project/background.png").convert_alpha()
+background = pygame.transform.scale(background, (800, 800))
+
 
 
 # fruit=Fruits()
@@ -201,33 +213,47 @@ pygame.time.set_timer(update_screen,150)
 main=Main()
 
 while True:
-    for event in pygame.event.get():
-        if event.type==pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-            
-        if event.type == update_screen:
-            main.update()
-            
-        #keyboard setting to move the snake
-        if event.type ==pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT:
-                if main.snake.direction.x !=-1:
-                    main.snake.direction=Vector2(1,0)
-            if event.key == pygame.K_LEFT:
-                if main.snake.direction.x !=1:
-                    main.snake.direction=Vector2(-1,0)
-            if event.key == pygame.K_UP:
-                if main.snake.direction.y !=1:
-                    main.snake.direction=Vector2(0,-1)
-            if event.key == pygame.K_DOWN:
-                if main.snake.direction.y !=-1:
-                    main.snake.direction=Vector2(0,1)
+    if game_state == True:
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                sys.exit()
                 
+            if event.type == update_screen:
+                main.update()
+                
+            #keyboard setting to move the snake
+            if event.type ==pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT:
+                    if main.snake.direction.x !=-1:
+                        main.snake.direction=Vector2(1,0)
+                if event.key == pygame.K_LEFT:
+                    if main.snake.direction.x !=1:
+                        main.snake.direction=Vector2(-1,0)
+                if event.key == pygame.K_UP:
+                    if main.snake.direction.y !=1:
+                        main.snake.direction=Vector2(0,-1)
+                if event.key == pygame.K_DOWN:
+                    if main.snake.direction.y !=-1:
+                        main.snake.direction=Vector2(0,1)
+                    
+                
+        game_screen.blit(background, (0, 0))        
+        #game_screen.fill((20,120,150))   
+        main.draw_elements()
+        check_game_over(main)
+
+    else:
+        game_screen.fill((20,120,150)) 
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                sys.exit()
             
-            
-    game_screen.fill((20,120,150))   
-    main.draw_elements()
+            if event.type ==pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    game_state = True
+                    main = Main()
     
     
     pygame.display.update()
