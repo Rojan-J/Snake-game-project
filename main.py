@@ -2,6 +2,7 @@ import pygame
 import sys
 import random
 from pygame.math import Vector2
+import math
 
 class Main:
     def __init__(self):
@@ -65,25 +66,57 @@ class Fruits:
         
 class Snake:
     def __init__(self):
+        open_eyes = pygame.image.load("Project/Snake-game-project/eyes3.png").convert_alpha()
+        open_eyes_scaled = pygame.transform.scale(open_eyes, (40, 40))
+
+        close_eyes = pygame.image.load("Project/Snake-game-project/eye_closed.png").convert_alpha()
+        close_eyes_scaled = pygame.transform.scale(close_eyes, (40, 40))         
+        
         self.body = [Vector2(5,10),Vector2(4,10),Vector2(3,10)]
         self.direction = Vector2(1,0)
         self.new_block=False
+        self.eyes = [open_eyes_scaled, close_eyes_scaled]
+        self.eyes_index = 0
         
     def draw_snake(self):
         for index, block in enumerate(self.body):
             x=int(block.x *40)
             y=int(block.y*40)
             block_rect=pygame.Rect(x,y,40,40)
+
+            
             if index == 0:  # Head of the snake               
                 # Determine which corners to round based on direction
                 if self.direction == Vector2(1, 0):  # Moving right
                     pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
+                    eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
+                    eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
+
+                    
                 elif self.direction == Vector2(-1, 0):  # Moving left
                     pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
+                    eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
+                    eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
+
+
                 elif self.direction == Vector2(0, -1):  # Moving up
                     pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_top_left_radius=10, border_top_right_radius= 10)  # Top-left corner
+                    eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], -90)
+                    eyes_rect = eyes_scaled.get_rect(center=(x + 35, y +20))
+
+
                 elif self.direction == Vector2(0, 1):  # Moving down
                     pygame.draw.rect(game_screen, (183, 110, 122), block_rect, border_bottom_left_radius=10, border_bottom_right_radius= 10)  # Bottom-left corner
+                    eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], -90)
+                    eyes_rect = eyes_scaled.get_rect(center=(x + 35, y +20))
+                    
+
+
+                game_screen.blit(eyes_scaled, eyes_rect)
+                if int(self.eyes_index) == 0: self.eyes_index += 0.02
+                else: self.eyes_index += 0.05
+                if self.eyes_index > 2: self.eyes_index = 0
+
 
             else:  # Other blocks without rounded corners
                 pygame.draw.rect(game_screen, (183, 110, 122), block_rect) 
