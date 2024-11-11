@@ -6,8 +6,8 @@ from pygame.math import Vector2
 
 class Main:
     
-    def __init__(self):
-        self.snake=Snake()
+    def __init__(self, snake_color):
+        self.snake=Snake(snake_color)
         self.fruit=Fruits()
         self.score = 0
         
@@ -71,7 +71,7 @@ class Fruits:
         self.pos=Vector2(self.x,self.y)
         
 class Snake:
-    def __init__(self):
+    def __init__(self, snake_color):
         open_eyes = pygame.image.load("Project/Snake-game-project/eyes3.png").convert_alpha()
         open_eyes_scaled = pygame.transform.scale(open_eyes, (40, 40))
 
@@ -92,6 +92,7 @@ class Snake:
         self.end_eyes = pygame.transform.scale(end_eye, (40, 40))
         self.tongue = tongue_scaled
         self.tongue_index = 0
+        self.snake_color = snake_color
 
         
     def draw_snake(self):
@@ -104,7 +105,7 @@ class Snake:
             if index == 0:  # Head of the snake               
                 # Determine which corners to round based on direction
                 if self.direction == Vector2(1, 0):  # Moving right
-                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
+                    pygame.draw.rect(game_screen, self.snake_color, block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
                     if int(self.tongue_index) == 0:
@@ -119,7 +120,7 @@ class Snake:
 
                     
                 elif self.direction == Vector2(-1, 0):  # Moving left
-                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
+                    pygame.draw.rect(game_screen, self.snake_color, block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
                     if int(self.tongue_index) == 0:
@@ -133,7 +134,7 @@ class Snake:
 
 
                 elif self.direction == Vector2(0, -1):  # Moving up
-                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_top_left_radius=10, border_top_right_radius= 10)  # Top-left corner
+                    pygame.draw.rect(game_screen, self.snake_color, block_rect, border_top_left_radius=10, border_top_right_radius= 10)  # Top-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], -90)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 35, y +20))
                     
@@ -148,7 +149,7 @@ class Snake:
 
 
                 elif self.direction == Vector2(0, 1):  # Moving down
-                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_bottom_left_radius=10, border_bottom_right_radius= 10)  # Bottom-left corner
+                    pygame.draw.rect(game_screen, self.snake_color, block_rect, border_bottom_left_radius=10, border_bottom_right_radius= 10)  # Bottom-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], -90)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 35, y +20))
 
@@ -173,7 +174,7 @@ class Snake:
 
 
             else:  # Other blocks without rounded corners
-                pygame.draw.rect(game_screen, "#5a6f19", block_rect) 
+                pygame.draw.rect(game_screen, self.snake_color, block_rect) 
             
     def draw_end_snake(self):
         for index, block in enumerate(self.body):
@@ -184,7 +185,7 @@ class Snake:
             if index == 0:  # Head of the snake               
                 # Determine which corners to round based on direction
                 if self.direction == Vector2(1, 0):  # Moving right
-                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
+                    pygame.draw.rect(game_screen, self.snake_color, block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
                     end_eyes_scaled = pygame.transform.rotate(self.end_eyes, 0)
                     end_eyes_rect = end_eyes_scaled.get_rect(center=(x + 20, y))
                     rotated_tongue = pygame.transform.rotate(self.tongue, 180)
@@ -193,7 +194,7 @@ class Snake:
 
                     
                 elif self.direction == Vector2(-1, 0):  # Moving left
-                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
+                    pygame.draw.rect(game_screen, self.snake_color, block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
                     end_eyes_scaled = pygame.transform.rotate(self.end_eyes, 0)
                     end_eyes_rect = end_eyes_scaled.get_rect(center=(x + 20, y))
                     pygame.draw.circle(game_screen, "Black", (x +5, y+25), 5, 5)
@@ -202,7 +203,7 @@ class Snake:
 
 
                 elif self.direction == Vector2(0, -1):  # Moving up
-                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_top_left_radius=10, border_top_right_radius= 10)  # Top-left corner
+                    pygame.draw.rect(game_screen, self.snake_color, block_rect, border_top_left_radius=10, border_top_right_radius= 10)  # Top-left corner
                     end_eyes_scaled = pygame.transform.rotate(self.end_eyes, -90)
                     end_eyes_rect = end_eyes_scaled.get_rect(center=(x + 35, y +20))
                     pygame.draw.circle(game_screen, "Black", (x +15, y+5), 5, 5)
@@ -212,7 +213,7 @@ class Snake:
 
 
                 elif self.direction == Vector2(0, 1):  # Moving down
-                    pygame.draw.rect(game_screen, "#5a6f19", block_rect, border_bottom_left_radius=10, border_bottom_right_radius= 10)  # Bottom-left corner
+                    pygame.draw.rect(game_screen, self.snake_color, block_rect, border_bottom_left_radius=10, border_bottom_right_radius= 10)  # Bottom-left corner
                     end_eyes_scaled = pygame.transform.rotate(self.end_eyes, -90)
                     end_eyes_rect = end_eyes_scaled.get_rect(center=(x + 35, y +20))
                     pygame.draw.circle(game_screen, "Black", (x +15, y+35), 5, 5)
@@ -223,7 +224,7 @@ class Snake:
                 game_screen.blit(end_eyes_scaled, end_eyes_rect)
 
             else:  # Other blocks without rounded corners
-                pygame.draw.rect(game_screen, "#5a6f19", block_rect) 
+                pygame.draw.rect(game_screen, self.snake_color, block_rect) 
 
 
     def undo(self):
@@ -248,6 +249,159 @@ class Snake:
     def add_block(self):
         self.new_block=True
 
+
+
+def settings():
+    global snake_color, background, difficulty, game_state, text_color
+
+    background_text = game_font_2.render("Background", True, "Black")
+    background_text_rect = background_text.get_rect(center=(440, 60))
+
+
+    light_bg = pygame.image.load("Project/Snake-game-project/background.png").convert_alpha()
+    light_bg = pygame.transform.scale(light_bg, (120, 120))
+    light_bg_rect = light_bg.get_rect(center= (300, 160))
+
+    night_bg = pygame.image.load("Project/Snake-game-project/night2.jpg").convert_alpha()
+    night_bg = pygame.transform.scale(night_bg, (120, 120))
+    night_bg_rect = night_bg.get_rect(center= (580, 160))
+
+    selected_light_bg = pygame.Rect(light_bg_rect.topleft[0]- 3, light_bg_rect.topleft[1] -3, 126, 126)
+    selected_night_bg = pygame.Rect(night_bg_rect.topleft[0]- 3, night_bg_rect.topleft[1] -3, 126, 126)
+    selected_bg = [selected_light_bg, selected_night_bg]
+    selected_bg_index = 0
+
+    snake_color_text = game_font_2.render("Snake Color", True, "Black")
+    snake_color_text_rect = snake_color_text.get_rect(center= (440, 300))
+
+    snake_green = pygame.Rect(180, 340, 120, 120)
+    snake_yellow = pygame.Rect(380, 340, 120, 120)
+    snake_blue = pygame.Rect(580, 340, 120, 120)
+
+    selected_green = pygame.Rect(snake_green.topleft[0] - 3, snake_green.topleft[1] - 3, 126, 126)
+    selected_yellow = pygame.Rect(snake_yellow.topleft[0] - 3, snake_yellow.topleft[1] - 3, 126, 126)
+    selected_blue = pygame.Rect(snake_blue.topleft[0] - 3, snake_blue.topleft[1] - 3, 126, 126)
+    selected_color = [selected_green, selected_yellow, selected_blue]
+    selected_color_index = 0
+
+    difficulty_text = game_font_2.render("Speed", True, "Black")
+    difficulty_text_rect = difficulty_text.get_rect(center= (440, 540))
+
+    slow = pygame.image.load('Project/Snake-game-project/turtle2.png').convert_alpha()
+    slow = pygame.transform.scale(slow, (120, 120))
+    slow = pygame.transform.flip(slow,True, False)
+    slow_text = game_font_3.render("Slow", True, "Black")
+
+
+    medium = pygame.image.load("Project/Snake-game-project/snake2.png").convert_alpha()
+    medium = pygame.transform.scale(medium, (120, 120))
+    medium_text = game_font_3.render("Medium", True, "Black")
+
+    fast = pygame.image.load("Project/Snake-game-project/cheetah.png").convert_alpha()
+    fast = pygame.transform.scale(fast, (120, 120))
+    fast_text = game_font_3.render("Fast", True, "Black")
+
+    slow_rect = slow.get_rect(topleft = (180, 580))
+    slow_text_rect = slow_text.get_rect(midtop = (240, 700))
+    
+    medium_rect = medium.get_rect(topleft = (380, 580))
+    medium_text_rect  =medium_text.get_rect(midtop = (440, 700))
+    
+    fast_rect = fast.get_rect(topleft = (580, 580))
+    fast_text_rect = fast_text.get_rect(midtop = (640, 700))
+
+    selected_speed = [slow_text, medium_text, fast_text]
+    selected_speed_rect = [slow_text_rect, medium_text_rect, fast_text_rect]
+    selected_speed_index = 1
+
+    start = game_font_2.render("Start", True, "Black")
+    start2_rect = pygame.Rect(540, 760, 200, 100)
+
+    home = game_font_2.render("Home Page", True, "Black")
+    home_rect = pygame.Rect(140, 760, 200, 100)
+
+    while True:
+        game_screen.fill("#bbff86")
+        game_screen.blit(background_text, background_text_rect)
+
+        game_screen.blit(light_bg, light_bg_rect)
+        game_screen.blit(night_bg, night_bg_rect)
+
+        game_screen.blit(snake_color_text, snake_color_text_rect)
+        pygame.draw.rect(game_screen, "#5a6f19", snake_green)
+        pygame.draw.rect(game_screen, "#f5ce18", snake_yellow)
+        pygame.draw.rect(game_screen, "#23d4df", snake_blue)
+
+        game_screen.blit(difficulty_text, difficulty_text_rect)
+        game_screen.blit(slow, slow_rect)
+        game_screen.blit(medium, medium_rect)
+        game_screen.blit(fast, fast_rect)
+
+        add_buttomn(game_screen, start2_rect, start)
+        add_buttomn(game_screen, home_rect, home)
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if light_bg_rect.collidepoint(event.pos):
+                    selected_bg_index = 0
+                    background = pygame.transform.scale(light_bg, (800, 800))
+                    text_color = "Black"
+
+                if night_bg_rect.collidepoint(event.pos):
+                    selected_bg_index = 1
+                    background = pygame.transform.scale(night_bg, (800, 800))
+                    text_color = "White"
+
+                if snake_green.collidepoint(event.pos):
+                    selected_color_index = 0
+                    snake_color = "#5a6f19"     #Green
+
+                if snake_yellow.collidepoint(event.pos):
+                    selected_color_index = 1
+                    snake_color = "#f5ce18"     #Yellow
+                
+                if snake_blue.collidepoint(event.pos):
+                    selected_color_index = 2
+                    snake_color = "#23d4df"     #Blue
+
+                if slow_rect.collidepoint(event.pos):
+                    selected_speed_index = 0
+                    difficulty = 10
+
+                if medium_rect.collidepoint(event.pos):
+                    selected_speed_index = 1
+                    difficulty = 60
+
+                if fast_rect.collidepoint(event.pos):
+                    selected_speed_index = 2
+                    difficulty = 200
+
+                if start2_rect.collidepoint(event.pos):
+                    return True
+                
+                if home_rect.collidepoint(event.pos):
+                    background = pygame.transform.scale(light_bg, (800, 800))
+                    snake_color = "#5a6f19"
+                    text_color = "Black"
+                    difficulty = 60
+                    return False
+                
+        pygame.draw.rect(game_screen, "Red", selected_bg[selected_bg_index], width= 3)
+        pygame.draw.rect(game_screen, "Red", selected_color[selected_color_index], width= 3)
+        game_screen.blit(selected_speed[selected_speed_index], selected_speed_rect[selected_speed_index])
+
+
+
+
+        pygame.display.update()
+                
+
+    
+
+
+
 game_state = False
 
 
@@ -264,9 +418,13 @@ game_screen=pygame.display.set_mode((880,880))
 pygame.display.set_caption("Snake")
 surface=pygame.Surface((400,400))
 background = pygame.image.load("Project/Snake-game-project/background.png").convert_alpha()
+default_background = pygame.transform.scale(background, (800, 800))
+
+snake_color = "#5a6f19"
+background = pygame.image.load("Project/Snake-game-project/background.png").convert_alpha()
 background = pygame.transform.scale(background, (800, 800))
-
-
+difficulty = 60
+text_color = "Black"
 
 # fruit=Fruits()
 # snake=Snake()
@@ -299,15 +457,7 @@ tutorial_rect = pygame.Rect(140, 640, 200, 100)
 
 
 
-#Gameover Page
-game_over_title = game_font.render("Game Over!", True, "Black")
-game_over_rect = game_over_title.get_rect(center= (440, 240))
 
-restart = game_font_1.render("Press space to restart", True, "Black")
-restart_rect = restart.get_rect(center=(440, 540))
-
-home_page = game_font_2.render("Home Page", True, "Black")
-home_page_click_rect = pygame.Rect(340, 590, 200, 100)
 
 
 def add_buttomn(screen, rect, text, rect_color = "White", shadow_color = "#979797"):
@@ -322,7 +472,7 @@ pygame.time.set_timer(update_screen,150)
 
 
 
-main=Main()
+main=Main(snake_color)
 def display_score(main):
     score = main.score
     score_text = game_font_3.render(f"Score: {score}", True, "White")
@@ -335,7 +485,17 @@ while True:
         if main.score != 0:
             main.snake.undo()
             main.snake.draw_end_snake()
-            last_score_text = game_font_4.render(f"Score: {main.score}", True, "Black")
+            #Gameover Page
+            game_over_title = game_font.render("Game Over!", True, text_color)
+            game_over_rect = game_over_title.get_rect(center= (440, 240))
+
+            restart = game_font_1.render("Press space to restart", True, text_color)
+            restart_rect = restart.get_rect(center=(440, 540))
+
+            home_page = game_font_2.render("Home Page", True, "Black")
+            home_page_click_rect = pygame.Rect(340, 590, 200, 100)
+
+            last_score_text = game_font_4.render(f"Score: {main.score}", True, text_color)
             last_score_rect = last_score_text.get_rect(center= (440, 390))
             game_screen.blit(last_score_text, last_score_rect)
             game_screen.blit(game_over_title, game_over_rect)
@@ -349,10 +509,14 @@ while True:
                 if event.type ==pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         game_state = True
-                        main = Main()
+                        main = Main(snake_color)
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if home_page_click_rect.collidepoint(event.pos):
+                        background = default_background
+                        snake_color = "#5a6f19"
+                        text_color = "Black"
+                        difficulty = 60
                         game_state = False
                         main.score =0
         else:
@@ -370,8 +534,13 @@ while True:
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if start_rect.collidepoint(event.pos):
-                        game_state = True
-                        main = Main()
+                        if settings():
+                            game_state = True
+                            main = Main(snake_color)
+                        
+                        else:
+                            game_state = False
+                            main.score = 0
 
     else:
         for event in pygame.event.get():
@@ -408,4 +577,4 @@ while True:
     pygame.display.update()
     
     
-    clock.tick(60)
+    clock.tick(difficulty)
