@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 from pygame.math import Vector2
-import math
+
 
 class Main:
     
@@ -31,6 +31,9 @@ class Main:
             self.score += 5
             self.fruit.randomize() 
             self.snake.add_block()
+            for block in self.snake.body:
+                if self.fruit.pos == block:
+                    self.fruit.randomize()
         #if self.fruit.pos== self.snake.body[0]:
          #   self.fruit.randomize()
             
@@ -51,8 +54,8 @@ class Main:
 
 class Fruits:
     def __init__(self):
-        self.x= random.randint(0,18)
-        self.y= random.randint(0,18)
+        self.x= random.randint(1,19)
+        self.y= random.randint(1,19)
         self.pos=Vector2(self.x,self.y)
         self.rect = pygame.Rect(-1, -1, 1, 1)
         
@@ -63,8 +66,8 @@ class Fruits:
         game_screen.blit(scaled_apple, self.rect)
         
     def randomize(self):
-        self.x= random.randint(0,19)
-        self.y= random.randint(0,19)
+        self.x= random.randint(1,20)
+        self.y= random.randint(1,20)
         self.pos=Vector2(self.x,self.y)
         
 class Snake:
@@ -253,11 +256,12 @@ def check_game_over(main):
     for block in main.snake.body[1:]:
         if block == main.snake.body[0]:
             game_state = False
-    if not 0<= main.snake.body[0].y < 20 or not 0<= main.snake.body[0].x < 20:
+    if not 1<= main.snake.body[0].y < 21 or not 1<= main.snake.body[0].x < 21:
         game_state = False
 
 pygame.init()
-game_screen=pygame.display.set_mode((800,800))
+game_screen=pygame.display.set_mode((880,880))
+pygame.display.set_caption("Snake")
 surface=pygame.Surface((400,400))
 background = pygame.image.load("Project/Snake-game-project/background.png").convert_alpha()
 background = pygame.transform.scale(background, (800, 800))
@@ -269,26 +273,74 @@ background = pygame.transform.scale(background, (800, 800))
 
 clock=pygame.time.Clock()
 
-game_font = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 150)
+#Fonts
+game_font = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 150) #Name of the game
+game_font_1 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 50) #Our brand
+game_font_2 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 40) #keys
+game_font_3 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 20) #scores 
+game_font_4 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 100) #game_over_scores 
 
 
+#Start Page
 start_surf = pygame.image.load("Project/Snake-game-project/start_page.jpg").convert_alpha()
-start_surf = pygame.transform.scale(start_surf, (800, 800))
+start_surf = pygame.transform.scale(start_surf, (880, 880))
 
 start_title = game_font.render("Snake", True, "Black")
-start_title_rect = start_title.get_rect(center = (400, 200))
+start_title_rect = start_title.get_rect(center = (440, 240))
 
+ronil_brand = game_font_1.render("RONIL", True, "Black")
+ronil_brand_rect = ronil_brand.get_rect(center=(440, 340))
+
+start_click = game_font_2.render("Start", True, "Black")
+start_rect = pygame.Rect(140, 490, 200, 100)
+
+tutorial_click = game_font_2.render("Tutorial", True, "Black")
+tutorial_rect = pygame.Rect(140, 640, 200, 100)
+
+
+
+#Gameover Page
+game_over_title = game_font.render("Game Over!", True, "Black")
+game_over_rect = game_over_title.get_rect(center= (440, 240))
+
+restart = game_font_1.render("Press space to restart", True, "Black")
+restart_rect = restart.get_rect(center=(440, 540))
+
+home_page = game_font_2.render("Home Page", True, "Black")
+home_page_click_rect = pygame.Rect(340, 590, 200, 100)
+
+
+def add_buttomn(screen, rect, text, rect_color = "White", shadow_color = "#979797"):
+    shadow_rect = pygame.Rect(rect.x + 5, rect.y + 5, 200, 100)
+    text_rect = text.get_rect(center= (rect.center))
+    pygame.draw.rect(screen, shadow_color, shadow_rect)
+    pygame.draw.rect(screen, rect_color, rect)
+    game_screen.blit(text, text_rect)
 
 update_screen=pygame.USEREVENT
 pygame.time.set_timer(update_screen,150)
 
+
+
 main=Main()
+def display_score(main):
+    score = main.score
+    score_text = game_font_3.render(f"Score: {score}", True, "White")
+    score_text_rect = score_text.get_rect(midleft = (60, 20))
+    game_screen.blit(score_text, score_text_rect)
+
 
 while True:
     if not game_state:
         if main.score != 0:
             main.snake.undo()
             main.snake.draw_end_snake()
+            last_score_text = game_font_4.render(f"Score: {main.score}", True, "Black")
+            last_score_rect = last_score_text.get_rect(center= (440, 390))
+            game_screen.blit(last_score_text, last_score_rect)
+            game_screen.blit(game_over_title, game_over_rect)
+            game_screen.blit(restart, restart_rect)
+            add_buttomn(game_screen, home_page_click_rect, home_page)
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
@@ -298,16 +350,26 @@ while True:
                     if event.key == pygame.K_SPACE:
                         game_state = True
                         main = Main()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if home_page_click_rect.collidepoint(event.pos):
+                        game_state = False
+                        main.score =0
         else:
+
             game_screen.blit(start_surf, (0,0))
             game_screen.blit(start_title, start_title_rect)
+            game_screen.blit(ronil_brand, ronil_brand_rect)
+            add_buttomn(game_screen, start_rect, start_click)
+            add_buttomn(game_screen, tutorial_rect, tutorial_click)
+
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 
-                if event.type ==pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if start_rect.collidepoint(event.pos):
                         game_state = True
                         main = Main()
 
@@ -336,7 +398,9 @@ while True:
                         main.snake.direction=Vector2(0,1)
                     
                 
-        game_screen.blit(background, (0, 0))        
+        game_screen.fill("#005e20")
+        game_screen.blit(background, (40, 40))    
+        display_score(main)    
         #game_screen.fill((20,120,150))
         check_game_over(main)
         if game_state: main.draw_elements()  
