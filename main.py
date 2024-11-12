@@ -9,7 +9,10 @@ class Main:
     def __init__(self, snake_color):
         self.snake=Snake(snake_color)
         self.fruit=Fruits()
+        self.bonus = Pepper()
         self.score = 0
+        self.eaten = None
+        self.count_down = 0
         
     def update(self):
         self.snake.snake_moving()
@@ -19,21 +22,57 @@ class Main:
 
         
     def draw_elements(self):
+        self.count_down += 1
+        apple_score = game_font_3.render("+5", True, text_color)
+        apple_score_rect = apple_score.get_rect(center = (int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 20))
+        pine_apple_score  = game_font_3.render("+10" , True, text_color)
+        pine_apple_score_rect = pine_apple_score.get_rect(center = (int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 20))
+
         self.fruit.draw_fruit()
+        if self.bonus.pepper_index == 1: self.bonus.draw_pepper()
         self.snake.draw_snake()
+
+        if self.eaten =="apple": game_screen.blit(apple_score, apple_score_rect)
+        elif self.eaten == "pine_apple": game_screen.blit(pine_apple_score, pine_apple_score_rect)
+
+        if self.count_down > 30: 
+            self.eaten = None
+            self.count_down = 0
         
     def check_collision(self):
 
         snake_head_rect = pygame.Rect(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40), 40, 40)
-
     
         if snake_head_rect.colliderect(self.fruit.rect):
-            self.score += 5
+            if self.fruit.fruit_index//3 == 0: 
+                self.score += 5
+                self.snake.add_block()
+                self.eaten = "apple"
+                self.count_down = 0
+
+            elif self.fruit.fruit_index//3 == 1: 
+                self.score += 10
+                for _ in range(2): self.snake.add_block()
+                self.eaten  ="pine_apple"
+                self.count_down = 0
+
+
             self.fruit.randomize() 
-            self.snake.add_block()
+            self.bonus.index_randomize()
+            
             for block in self.snake.body:
                 if self.fruit.pos == block:
                     self.fruit.randomize()
+
+        if snake_head_rect.colliderect(self.bonus.rect): #AI should enter here
+            self.score += 15
+            for _ in range(3): self.snake.add_block()
+            self.bonus.randomize()
+            self.bonus.index_randomize()
+            for block in self.snake.body:
+                if self.bonus.pos == block:
+                    self.bonus.randomize()
+
         #if self.fruit.pos== self.snake.body[0]:
          #   self.fruit.randomize()
             
@@ -50,6 +89,9 @@ class Main:
     
     #def game_over(self):
         #self.game_state = False
+
+    def add_bonus(self):
+        self.bonus.draw_pepper()
         
 
 class Fruits:
@@ -58,17 +100,27 @@ class Fruits:
         self.y= random.randint(1,19)
         self.pos=Vector2(self.x,self.y)
         self.rect = pygame.Rect(-1, -1, 1, 1)
-        
+        self.fruit_index = 0
+
     def draw_fruit(self):
+        pine_apple = pygame.image.load("Project/Snake-game-project/pineapple.png").convert_alpha()
+        pine_apple = pygame.transform.scale(pine_apple, (40, 60))
         apple = pygame.image.load("Project/Snake-game-project/apple1.png").convert_alpha()
-        scaled_apple = pygame.transform.scale(apple, (40, 40))
-        self.rect = scaled_apple.get_rect(topleft = (int(self.pos.x*40), int(self.pos.y*40)))
-        game_screen.blit(scaled_apple, self.rect)
+        apple = pygame.transform.scale(apple, (40, 40))
+        fruit = [apple, pine_apple]
+        surf = fruit[self.fruit_index // 3]
+        self.rect = surf.get_rect(topleft = (int(self.pos.x*40), int(self.pos.y*40)))
+        game_screen.blit(surf, self.rect)
         
     def randomize(self):
+        self.fruit_index = random.randint(0, 3)
+        if self.fruit_index // 3 == 1 : y_border = 19
+        else: y_border = 20
+
         self.x= random.randint(1,20)
-        self.y= random.randint(1,20)
+        self.y= random.randint(1,y_border)
         self.pos=Vector2(self.x,self.y)
+
         
 class Snake:
     def __init__(self, snake_color):
@@ -250,6 +302,28 @@ class Snake:
         self.new_block=True
 
 
+class Pepper:
+    def __init__(self):
+        self.x= random.randint(1,19)
+        self.y= random.randint(1,19)
+        self.pos=Vector2(self.x,self.y)
+        self.rect = pygame.Rect(-1, -1, 1, 1)
+        self.pepper_index = 0
+
+    def draw_pepper(self):
+        pepper = pygame.image.load("Project/Snake-game-project/pepper.png").convert_alpha()
+        pepper = pygame.transform.scale(pepper, (40, 60))
+        self.rect = pepper.get_rect(topleft = (int(self.pos.x*40), int(self.pos.y*40)))
+        game_screen.blit(pepper, self.rect)
+
+    def index_randomize(self):
+        self.pepper_index = random.randint(0,8)
+        
+    def randomize(self):
+        self.x= random.randint(1,20)
+        self.y= random.randint(1,19)
+        self.pos=Vector2(self.x,self.y)
+
 
 def settings():
     global snake_color, background, difficulty, game_state, text_color
@@ -403,6 +477,7 @@ def settings():
 
 
 game_state = False
+start_page = True
 
 
 def check_game_over(main):
@@ -482,7 +557,7 @@ def display_score(main):
 
 while True:
     if not game_state:
-        if main.score != 0:
+        if not start_page:
             main.snake.undo()
             main.snake.draw_end_snake()
             #Gameover Page
@@ -510,6 +585,7 @@ while True:
                     if event.key == pygame.K_SPACE:
                         game_state = True
                         main = Main(snake_color)
+                        start_page = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if home_page_click_rect.collidepoint(event.pos):
@@ -519,6 +595,7 @@ while True:
                         difficulty = 60
                         game_state = False
                         main.score =0
+                        start_page = True
         else:
 
             game_screen.blit(start_surf, (0,0))
@@ -537,10 +614,11 @@ while True:
                         if settings():
                             game_state = True
                             main = Main(snake_color)
+                            start_page = False
                         
                         else:
                             game_state = False
-                            main.score = 0
+                            start_page = True
 
     else:
         for event in pygame.event.get():
