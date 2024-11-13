@@ -13,6 +13,7 @@ class Main:
         self.score = 0
         self.eaten = None
         self.count_down = 0
+        self.button_click_sound=pygame.mixer.Sound("Project/Snake-game-project/ui-click-menu-modern-interface-select-small-01-230473.mp3")
         
     def update(self):
         self.snake.snake_moving()
@@ -63,6 +64,8 @@ class Main:
             for block in self.snake.body:
                 if self.fruit.pos == block:
                     self.fruit.randomize()
+            
+            self.snake.play_eating_sound()
 
         if snake_head_rect.colliderect(self.bonus.rect): #AI should enter here
             self.score += 15
@@ -92,6 +95,9 @@ class Main:
 
     def add_bonus(self):
         self.bonus.draw_pepper()
+        
+    def play_botton_click(self):
+        self.button_click_sound.play()
         
 
 class Fruits:
@@ -145,6 +151,11 @@ class Snake:
         self.tongue = tongue_scaled
         self.tongue_index = 0
         self.snake_color = snake_color
+        
+        self.eating_sound=pygame.mixer.Sound("Project/Snake-game-project/apple-munch-40169 (mp3cut.net).mp3")
+        self.hitting_wall_sound=pygame.mixer.Sound("Project/Snake-game-project/hitting-wall-85571 (mp3cut.net).mp3")
+        self.self_hitting_sound=pygame.mixer.Sound("Project/Snake-game-project/self-hitting-230542.mp3")
+        self.game_over_sound=pygame.mixer.Sound("Project/Snake-game-project/game-over-89697.mp3")
 
         
     def draw_snake(self):
@@ -300,6 +311,18 @@ class Snake:
             
     def add_block(self):
         self.new_block=True
+        
+    def play_eating_sound(self):
+        self.eating_sound.play()
+        
+    def play_hitting_wall(self):
+        self.hitting_wall_sound.play()
+        
+    def play_self_hitting(self):
+        self.self_hitting_sound.play()
+        
+    def play_game_over(self):
+        self.game_over_sound.play()
 
 
 class Pepper:
@@ -453,9 +476,13 @@ def settings():
                     difficulty = 200
 
                 if start2_rect.collidepoint(event.pos):
+                    main.play_botton_click()
+                    game_over_sound_played=False
+                    game_over_start_time=None
                     return True
                 
                 if home_rect.collidepoint(event.pos):
+                    main.play_botton_click()
                     background = pygame.transform.scale(light_bg, (800, 800))
                     snake_color = "#5a6f19"
                     text_color = "Black"
@@ -484,10 +511,14 @@ def check_game_over(main):
     global game_state
     for block in main.snake.body[1:]:
         if block == main.snake.body[0]:
+            main.snake.play_self_hitting()
             game_state = False
     if not 1<= main.snake.body[0].y < 21 or not 1<= main.snake.body[0].x < 21:
+        main.snake.play_hitting_wall()
         game_state = False
 
+
+pygame.mixer.pre_init(44100,-16,2,512)
 pygame.init()
 game_screen=pygame.display.set_mode((880,880))
 pygame.display.set_caption("Snake")
@@ -555,27 +586,42 @@ def display_score(main):
     game_screen.blit(score_text, score_text_rect)
 
 
+game_over_start_time=None
+game_over_sound_played=False
+
 while True:
     if not game_state:
         if not start_page:
             main.snake.undo()
             main.snake.draw_end_snake()
             #Gameover Page
-            game_over_title = game_font.render("Game Over!", True, text_color)
-            game_over_rect = game_over_title.get_rect(center= (440, 240))
+            
+            if game_over_start_time is None:
+                game_over_start_time=pygame.time.get_ticks()
+                
+            elapsed_time=pygame.time.get_ticks()-game_over_start_time
+            
+            if elapsed_time>=1000:
+                if not game_over_sound_played:
+                    main.snake.play_game_over()
+                    game_over_sound_played=True
+                    
+            
+                game_over_title = game_font.render("Game Over!", True, text_color)
+                game_over_rect = game_over_title.get_rect(center= (440, 240))
 
-            restart = game_font_1.render("Press space to restart", True, text_color)
-            restart_rect = restart.get_rect(center=(440, 540))
+                restart = game_font_1.render("Press space to restart", True, text_color)
+                restart_rect = restart.get_rect(center=(440, 540))
 
-            home_page = game_font_2.render("Home Page", True, "Black")
-            home_page_click_rect = pygame.Rect(340, 590, 200, 100)
+                home_page = game_font_2.render("Home Page", True, "Black")
+                home_page_click_rect = pygame.Rect(340, 590, 200, 100)
 
-            last_score_text = game_font_4.render(f"Score: {main.score}", True, text_color)
-            last_score_rect = last_score_text.get_rect(center= (440, 390))
-            game_screen.blit(last_score_text, last_score_rect)
-            game_screen.blit(game_over_title, game_over_rect)
-            game_screen.blit(restart, restart_rect)
-            add_buttomn(game_screen, home_page_click_rect, home_page)
+                last_score_text = game_font_4.render(f"Score: {main.score}", True, text_color)
+                last_score_rect = last_score_text.get_rect(center= (440, 390))
+                game_screen.blit(last_score_text, last_score_rect)
+                game_screen.blit(game_over_title, game_over_rect)
+                game_screen.blit(restart, restart_rect)
+                add_buttomn(game_screen, home_page_click_rect, home_page)
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
@@ -585,6 +631,8 @@ while True:
                     if event.key == pygame.K_SPACE:
                         game_state = True
                         main = Main(snake_color)
+                        game_over_sound_played=False
+                        game_over_start_time=None
                         start_page = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -611,6 +659,7 @@ while True:
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if start_rect.collidepoint(event.pos):
+                        main.play_botton_click()
                         if settings():
                             game_state = True
                             main = Main(snake_color)
@@ -619,6 +668,10 @@ while True:
                         else:
                             game_state = False
                             start_page = True
+                            
+                    elif tutorial_rect.collidepoint(event.pos):
+                        main.play_botton_click()
+
 
     else:
         for event in pygame.event.get():
