@@ -637,9 +637,12 @@ while True:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if home_page_click_rect.collidepoint(event.pos):
+                        main.play_botton_click()
                         background = default_background
                         snake_color = "#5a6f19"
                         text_color = "Black"
+                        game_over_sound_played = False
+                        game_over_start_time = None
                         difficulty = 60
                         game_state = False
                         main.score =0
