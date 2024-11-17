@@ -355,7 +355,7 @@ def settings():
     background_text_rect = background_text.get_rect(center=(440, 60))
 
 
-    light_bg = pygame.image.load("Project/Snake-game-project/background.png").convert_alpha()
+    light_bg = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
     light_bg = pygame.transform.scale(light_bg, (120, 120))
     light_bg_rect = light_bg.get_rect(center= (300, 160))
 
@@ -443,7 +443,7 @@ def settings():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if light_bg_rect.collidepoint(event.pos):
                     selected_bg_index = 0
-                    background = pygame.transform.scale(light_bg, (800, 800))
+                    background = pygame.transform.scale(light_bg, (797.5, 800))
                     text_color = "Black"
 
                 if night_bg_rect.collidepoint(event.pos):
@@ -483,7 +483,7 @@ def settings():
                 
                 if home_rect.collidepoint(event.pos):
                     main.play_botton_click()
-                    background = pygame.transform.scale(light_bg, (800, 800))
+                    background = pygame.transform.scale(light_bg, (800, 797.5))
                     snake_color = "#5a6f19"
                     text_color = "Black"
                     difficulty = 60
@@ -523,12 +523,12 @@ pygame.init()
 game_screen=pygame.display.set_mode((880,880))
 pygame.display.set_caption("Snake")
 surface=pygame.Surface((400,400))
-background = pygame.image.load("Project/Snake-game-project/background.png").convert_alpha()
-default_background = pygame.transform.scale(background, (800, 800))
+background = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
+default_background = pygame.transform.scale(background, (800, 797.5))
 
 snake_color = "#5a6f19"
-background = pygame.image.load("Project/Snake-game-project/background.png").convert_alpha()
-background = pygame.transform.scale(background, (800, 800))
+background = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
+background = pygame.transform.scale(background, (800, 797.5))
 difficulty = 60
 text_color = "Black"
 
