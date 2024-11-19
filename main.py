@@ -3,6 +3,109 @@ import sys
 import random
 from pygame.math import Vector2
 
+import math
+import heapq
+
+class Block:
+    def __init__(self):
+        self.parent_i=10
+        self.parent_j=5
+        self.f=float("inf")
+        self.g=float("inf")
+        self.h=0
+        
+class AI:
+    def __init__(self, snake_body):
+        self.snake_body = snake_body
+        pass
+
+    def is_safe(self,row,col):
+        return (1<=row<20) and (1<=col<20)
+    
+    def snake_body_collision(self, row, col, snake_body):
+        for block in snake_body:
+            if Vector2(col, row) == block:
+                return False
+        return True
+
+    def fruit_eaten(self,row,col,fruit_pos):
+        return (row,col)==fruit_pos
+
+    def h_value_calculation(self,row,col, fruit_pos):
+        return abs(row-fruit_pos[0])+abs(col-fruit_pos[1])
+
+    #def draw_path()
+    def reconstruct_path(self,block_inf, fruit_pos):
+        path=[]
+        current_i,current_j= map(int, fruit_pos)
+        
+        while block_inf[current_i][current_j].parent_i != current_i or block_inf[current_i][current_j].parent_j != current_j:
+            path.append((current_i,current_j))
+            temporary_i=block_inf[current_i][current_j].parent_i
+            temporary_j=block_inf[current_i][current_j].parent_j
+            current_i , current_j =temporary_i ,temporary_j
+        
+        path.reverse
+        for point in path:
+            print("YEs")
+            path_rect = pygame.Rect(int(point[0]*40), int(point[1]*40), 40, 40)
+            pygame.draw.rect(game_screen, "Red", path_rect)
+
+
+    def ai_search(self, start_point, fruit_pos):
+        visited_blocks=[[False for _ in range(20)] for _ in range(20)] 
+        block_inf=[[Block() for _ in range(20)] for _ in range(20)]
+        
+        i,j= map(int, start_point)
+        
+        block_inf[i][j].f=0
+        block_inf[i][j].g=0
+        block_inf[i][j].h=0
+        block_inf[i][j].parent_i=i
+        block_inf[i][j].parent_j=j
+        
+        open_list=[]
+        heapq.heappush(open_list,(0.0,i,j))
+        
+        fruit_found=False
+        
+
+                
+        while open_list:
+            best_block=heapq.heappop(open_list)
+            i,j=best_block[1],best_block[2]
+            visited_blocks[i][j]=True
+            
+            possible_moves= [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+            
+            for move in possible_moves:
+                next_i=i+move[0]
+                next_j=j+move[1]
+                
+                
+                if self.is_safe(next_i,next_j) and self.snake_body_collision(next_i, next_j, self.snake_body):
+                    if self.fruit_eaten(next_i, next_j, fruit_pos):
+                        block_inf[next_i][next_j].parent_i=i
+                        block_inf[next_i][next_j].parent_j=j
+                        
+                        fruit_found=True
+
+                    
+                    else:
+                        g_new=block_inf[i][j].g+1.0
+                        h_new=self.h_value_calculation(next_i,next_j,fruit_pos)
+                        f_new=g_new+h_new
+                        
+                        if block_inf[next_i][next_j].f==float("inf") or block_inf[next_i][next_j].f>f_new:
+                            heapq.heappush(open_list,(f_new,next_i,next_j))
+                            block_inf[next_i][next_j].f=f_new
+                            block_inf[next_i][next_j].g=g_new
+                            block_inf[next_i][next_j].h=h_new
+                            block_inf[next_i][next_j].parent_i=i
+                            block_inf[next_i][next_j].parent_j=j
+        self.reconstruct_path(block_inf,fruit_pos)                    
+        if not fruit_found:
+            return False
 
 class Main:
     
@@ -19,6 +122,8 @@ class Main:
         self.snake.snake_moving()
         self.check_collision()
         self.draw_elements()
+        self.ai = AI(self.snake.body)
+        self.ai.ai_search(tuple(self.snake.body[0]),tuple(self.fruit.pos))
         #self.check_gameover()
 
         
