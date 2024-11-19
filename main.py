@@ -349,7 +349,7 @@ class Pepper:
 
 
 def settings():
-    global snake_color, background, difficulty, game_state, text_color
+    global snake_color, background, difficulty, game_state, text_color, blinking_speed
 
     background_text = game_font_2.render("Background", True, "Black")
     background_text_rect = background_text.get_rect(center=(440, 60))
@@ -359,7 +359,7 @@ def settings():
     light_bg = pygame.transform.scale(light_bg, (120, 120))
     light_bg_rect = light_bg.get_rect(center= (300, 160))
 
-    night_bg = pygame.image.load("Project/Snake-game-project/night2.jpg").convert_alpha()
+    night_bg = pygame.image.load("Project/Snake-game-project/dark_mode_background.png").convert_alpha()
     night_bg = pygame.transform.scale(night_bg, (120, 120))
     night_bg_rect = night_bg.get_rect(center= (580, 160))
 
@@ -465,15 +465,21 @@ def settings():
 
                 if slow_rect.collidepoint(event.pos):
                     selected_speed_index = 0
-                    difficulty = 10
+                    difficulty = 200
+                    blinking_speed = 40
+                    pygame.time.set_timer(update_screen, difficulty)
 
                 if medium_rect.collidepoint(event.pos):
                     selected_speed_index = 1
-                    difficulty = 60
+                    difficulty = 150
+                    blinking_speed = 60
+                    pygame.time.set_timer(update_screen, difficulty)
 
                 if fast_rect.collidepoint(event.pos):
                     selected_speed_index = 2
-                    difficulty = 200
+                    difficulty = 100
+                    blinking_speed = 80
+                    pygame.time.set_timer(update_screen, difficulty)
 
                 if start2_rect.collidepoint(event.pos):
                     main.play_botton_click()
@@ -529,7 +535,8 @@ default_background = pygame.transform.scale(background, (800, 797.5))
 snake_color = "#5a6f19"
 background = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
 background = pygame.transform.scale(background, (800, 797.5))
-difficulty = 60
+difficulty = 150
+blinking_speed = 60
 text_color = "Black"
 
 # fruit=Fruits()
@@ -588,6 +595,7 @@ def display_score(main):
 
 game_over_start_time=None
 game_over_sound_played=False
+
 
 while True:
     if not game_state:
@@ -711,4 +719,4 @@ while True:
     pygame.display.update()
     
     
-    clock.tick(difficulty)
+    clock.tick(blinking_speed)
