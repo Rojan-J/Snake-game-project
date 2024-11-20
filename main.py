@@ -299,7 +299,7 @@ class Main:
         snake_head_rect = pygame.Rect(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40), 40, 40)
     
         if snake_head_rect.colliderect(self.fruit.rect):
-            if ai_state: 
+            if ai_state and not tutorial: 
                 self.bonus_count_down += 1
                 if self.bonus_count_down >= 5:
                     self.bonus_count_down = 0
@@ -780,6 +780,7 @@ def settings():
 
 game_state = False
 start_page = True
+tutorial = False
 
 
 
@@ -952,6 +953,12 @@ while True:
                             
                     elif tutorial_rect.collidepoint(event.pos):
                         main.play_botton_click()
+                        tutorial = True
+                        game_state = True
+                        start_page = False
+                        ai_state = True
+                        main = Main(snake_color)
+
 
 
     else:
