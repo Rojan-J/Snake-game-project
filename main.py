@@ -17,10 +17,11 @@ class Block:
 class AI:
     def __init__(self, snake_body):
         self.snake_body = snake_body
+        self.path = None
         pass
 
     def is_safe(self,row,col):
-        return (1<=row<20) and (1<=col<20)
+        return (0<=row<20) and (0<=col<20)
     
     def snake_body_collision(self, row, col, snake_body):
         for block in snake_body:
@@ -29,6 +30,7 @@ class AI:
         return True
 
     def fruit_eaten(self,row,col,fruit_pos):
+        print(row, col, fruit_pos)
         return (row,col)==fruit_pos
 
     def h_value_calculation(self,row,col, fruit_pos):
@@ -38,6 +40,7 @@ class AI:
     def reconstruct_path(self,block_inf, fruit_pos):
         path=[]
         current_i,current_j= map(int, fruit_pos)
+        print(current_i, current_j)
         
         while block_inf[current_i][current_j].parent_i != current_i or block_inf[current_i][current_j].parent_j != current_j:
             path.append((current_i,current_j))
@@ -45,11 +48,10 @@ class AI:
             temporary_j=block_inf[current_i][current_j].parent_j
             current_i , current_j =temporary_i ,temporary_j
         
-        path.reverse
-        for point in path:
-            print("YEs")
-            path_rect = pygame.Rect(int(point[0]*40), int(point[1]*40), 40, 40)
-            pygame.draw.rect(game_screen, "Red", path_rect)
+        path.reverse()
+        print(path)
+        self.path = path
+
 
 
     def ai_search(self, start_point, fruit_pos):
@@ -57,7 +59,8 @@ class AI:
         block_inf=[[Block() for _ in range(20)] for _ in range(20)]
         
         i,j= map(int, start_point)
-        
+        i -= 1
+        j -= 1
         block_inf[i][j].f=0
         block_inf[i][j].g=0
         block_inf[i][j].h=0
@@ -76,7 +79,7 @@ class AI:
             i,j=best_block[1],best_block[2]
             visited_blocks[i][j]=True
             
-            possible_moves= [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+            possible_moves= [(0, 1), (0, -1), (1, 0), (-1, 0)]
             
             for move in possible_moves:
                 next_i=i+move[0]
@@ -84,10 +87,12 @@ class AI:
                 
                 
                 if self.is_safe(next_i,next_j) and self.snake_body_collision(next_i, next_j, self.snake_body):
+                    if visited_blocks[next_i][next_j]: continue
+
                     if self.fruit_eaten(next_i, next_j, fruit_pos):
                         block_inf[next_i][next_j].parent_i=i
                         block_inf[next_i][next_j].parent_j=j
-                        
+                        self.reconstruct_path(block_inf,fruit_pos)
                         fruit_found=True
 
                     
@@ -103,7 +108,7 @@ class AI:
                             block_inf[next_i][next_j].h=h_new
                             block_inf[next_i][next_j].parent_i=i
                             block_inf[next_i][next_j].parent_j=j
-        self.reconstruct_path(block_inf,fruit_pos)                    
+                    
         if not fruit_found:
             return False
 
@@ -112,6 +117,7 @@ class Main:
     def __init__(self, snake_color):
         self.snake=Snake(snake_color)
         self.fruit=Fruits()
+        self.ai = AI(self.snake.body)
         self.bonus = Pepper()
         self.score = 0
         self.eaten = None
@@ -123,10 +129,20 @@ class Main:
         self.check_collision()
         self.draw_elements()
         self.ai = AI(self.snake.body)
-        self.ai.ai_search(tuple(self.snake.body[0]),tuple(self.fruit.pos))
+        self.ai.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+
+
         #self.check_gameover()
 
-        
+    def draw_path(self):
+        self.final_path = self.ai.path
+        print(self.final_path)
+        if self.final_path != None:
+            for point in self.final_path:
+                
+                path_rect = pygame.Rect(int((point[0])*40), int((point[1])*40), 40, 40)
+                pygame.draw.rect(game_screen, "Red", path_rect)
+
     def draw_elements(self):
         self.count_down += 1
         apple_score = game_font_3.render("+5", True, text_color)
@@ -137,6 +153,7 @@ class Main:
         self.fruit.draw_fruit()
         if self.bonus.pepper_index == 1: self.bonus.draw_pepper()
         self.snake.draw_snake()
+        self.draw_path()
 
         if self.eaten =="apple": game_screen.blit(apple_score, apple_score_rect)
         elif self.eaten == "pine_apple": game_screen.blit(pine_apple_score, pine_apple_score_rect)
