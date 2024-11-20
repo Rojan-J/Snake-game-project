@@ -6,6 +6,7 @@ from pygame.math import Vector2
 import math
 import heapq
 
+ai_state = False
 class Block:
     def __init__(self):
         self.parent_i=10
@@ -130,6 +131,7 @@ class Main:
         self.score = 0
         self.eaten = None
         self.count_down = 0
+        self.bonus_count_down = 0
         self.button_click_sound=pygame.mixer.Sound("Project/Snake-game-project/ui-click-menu-modern-interface-select-small-01-230473.mp3")
         self.path = None
         self.direction = None
@@ -145,7 +147,6 @@ class Main:
         return True
 
     def fruit_eaten(self,row,col,fruit_pos):
-        print(row, col, fruit_pos)
         return row == int(fruit_pos[0]) and col == int(fruit_pos[1])
 
     def h_value_calculation(self,row,col, fruit_pos):
@@ -156,7 +157,6 @@ class Main:
         path=[]
         direction = []
         current_i,current_j= map(int, fruit_pos)
-        #print(current_i, current_j)
         
         while block_inf[current_i-1][current_j-1].parent_i != current_i or block_inf[current_i-1][current_j-1].parent_j != current_j:
             path.append((current_i,current_j))
@@ -168,8 +168,6 @@ class Main:
         direction.reverse()
         path.reverse()
         self.direction = direction
-        print("dir", direction)
-        print("path", path)
         self.path = path
 
 
@@ -179,7 +177,6 @@ class Main:
         block_inf=[[Block() for _ in range(20)] for _ in range(20)]
         fruit_pos = (int(fruit_pos[0]), int(fruit_pos[1]))
         i,j= map(int, start_point)
-        print("Start",i, j)
         block_inf[i -1][j- 1].f=0
         block_inf[i- 1][j-1].g=0
         block_inf[i-1][j-1].h=0
@@ -197,7 +194,6 @@ class Main:
         while open_list:
             best_block=heapq.heappop(open_list)
             i,j=best_block[1],best_block[2]
-            print("best", i, j, self.snake.body[0])
             visited_blocks[i- 1][j-1]=True
             
             possible_moves= [(0, 1), (0, -1), (1, 0), (-1, 0)]
@@ -238,10 +234,14 @@ class Main:
     
 
     def update(self):
-        self.snake_moving_ai()
-        #self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+
+                    
+        if ai_state: 
+            self.snake_moving_ai()
+        else: self.snake.snake_moving()
         self.check_collision()
         self.draw_elements()
+
 
 
 
@@ -252,10 +252,16 @@ class Main:
                 return False
 
         return True
+    
+    def check_pepper_pos(self):
+        for block in self.snake.body:
+            if self.bonus.pos == block:
+                return False
+
+        return True
 
     def draw_path(self):
         self.final_path = self.path
-        #print(self.final_path)
         if self.final_path != None:
             for point in self.final_path[:]:
                 
@@ -271,22 +277,34 @@ class Main:
 
         self.draw_path()
         self.fruit.draw_fruit()
-        if self.bonus.pepper_index == 1: self.bonus.draw_pepper()
+        if not ai_state:
+            if self.bonus.pepper_index == 1: self.bonus.draw_pepper()
         self.snake.draw_snake()
 
 
         if self.eaten =="apple": game_screen.blit(apple_score, apple_score_rect)
         elif self.eaten == "pine_apple": game_screen.blit(pine_apple_score, pine_apple_score_rect)
 
+        bonus_text = game_font_1.render("Warning: Bonus is finishing!", True, text_color)
+        bonus_text_rect = bonus_text.get_rect(center=(400, 100))
+        if self.bonus_count_down >=4:
+            game_screen.blit(bonus_text, bonus_text_rect)
+
         if self.count_down > 30: 
             self.eaten = None
             self.count_down = 0
         
     def check_collision(self):
-
+        global ai_state
         snake_head_rect = pygame.Rect(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40), 40, 40)
     
         if snake_head_rect.colliderect(self.fruit.rect):
+            if ai_state: 
+                self.bonus_count_down += 1
+                if self.bonus_count_down >= 5:
+                    self.bonus_count_down = 0
+                    self.path = None
+                    ai_state = False
             if self.fruit.fruit_index//3 == 0: 
                 self.score += 5
                 self.snake.add_block()
@@ -299,16 +317,20 @@ class Main:
                 self.eaten  ="pine_apple"
                 self.count_down = 0
 
-            self.fruit.randomize() 
+            self.fruit.randomize()
             self.bonus.index_randomize()
             
             while not self.check_fruit_pos():
                 self.fruit.randomize()
+
+            while not self.check_pepper_pos():
+                self.bonus.randomize()
             
             self.snake.play_eating_sound()
             
-            self.path = None  # Clear the path
-            self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+            if ai_state:
+                self.path = None  # Clear the path
+                self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
 
 
         if snake_head_rect.colliderect(self.bonus.rect): #AI should enter here
@@ -316,9 +338,9 @@ class Main:
             for _ in range(3): self.snake.add_block()
             self.bonus.randomize()
             self.bonus.index_randomize()
-            for block in self.snake.body:
-                if self.bonus.pos == block:
-                    self.bonus.randomize()
+            while not self.check_pepper_pos():
+                self.bonus.randomize()
+            ai_state = True
 
  
     def add_bonus(self):
@@ -758,6 +780,7 @@ def settings():
 
 game_state = False
 start_page = True
+
 
 
 def check_game_over(main):
