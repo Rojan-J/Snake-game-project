@@ -246,6 +246,12 @@ class Main:
 
 
         #self.check_gameover()
+    def check_fruit_pos(self):
+        for block in self.snake.body:
+            if self.fruit.pos == block:
+                return False
+
+        return True
 
     def draw_path(self):
         self.final_path = self.path
@@ -254,7 +260,7 @@ class Main:
             for point in self.final_path[:]:
                 
                 path_rect = pygame.Rect(int((point[0])*40), int((point[1])*40), 40, 40)
-                pygame.draw.rect(game_screen, "Red", path_rect)
+                pygame.draw.circle(game_screen, "Red", ((int((point[0]+0.5)*40), int((point[1]+0.5)*40))), 5)
 
     def draw_elements(self):
         self.count_down += 1
@@ -296,9 +302,8 @@ class Main:
             self.fruit.randomize() 
             self.bonus.index_randomize()
             
-            for block in self.snake.body:
-                if self.fruit.pos == block:
-                    self.fruit.randomize()
+            while not self.check_fruit_pos():
+                self.fruit.randomize()
             
             self.snake.play_eating_sound()
             
@@ -325,18 +330,17 @@ class Main:
     def snake_moving_ai(self):
         self.directions = self.direction
         if self.directions and len(self.directions) > 0:
-            next_move = self.directions.pop(0)
-
+            self.snake.direction = Vector2(self.directions.pop(0))
             self.snake.last_body = self.snake.body[:]
             if self.snake.new_block==True:
                 prev_body=self.snake.body[:]
-                prev_body.insert(0,prev_body[0]+Vector2(next_move))
+                prev_body.insert(0,prev_body[0]+self.snake.direction)
                 new_body=prev_body
                 self.snake.body=new_body[:] 
                 self.snake.new_block = False
             else:
                 prev_body=self.snake.body[:-1]
-                prev_body.insert(0,prev_body[0]+Vector2(next_move))
+                prev_body.insert(0,prev_body[0]+self.snake.direction)
                 new_body=prev_body
                 self.snake.body=new_body[:]
         self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
