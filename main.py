@@ -13,25 +13,140 @@ class Block:
         self.f=float("inf")
         self.g=float("inf")
         self.h=0
+        self.dir = None
         
-class AI:
-    def __init__(self, snake_body):
-        self.snake_body = snake_body
+# class AI:
+#     def __init__(self, snake_body):
+#         self.snake_body = snake_body
+#         self.path = None
+#         self.direction = None
+#         pass
+
+#     def is_safe(self,row,col):
+#         return (1<=row<21) and (1<=col<21)
+    
+#     def snake_body_collision(self, row, col, snake_body):
+#         for block in snake_body:
+#             if Vector2(row, col) == block:
+#                 return False
+#         return True
+
+#     def fruit_eaten(self,row,col,fruit_pos):
+#         print(row, col, fruit_pos)
+#         return row == int(fruit_pos[0]) and col == int(fruit_pos[1])
+
+#     def h_value_calculation(self,row,col, fruit_pos):
+#         return abs(row-fruit_pos[0])+abs(col-fruit_pos[1])
+
+#     #def draw_path()
+#     def reconstruct_path(self,block_inf, fruit_pos):
+#         path=[]
+#         direction = []
+#         current_i,current_j= map(int, fruit_pos)
+#         #print(current_i, current_j)
+        
+#         while block_inf[current_i-1][current_j-1].parent_i != current_i or block_inf[current_i-1][current_j-1].parent_j != current_j:
+#             path.append((current_i,current_j))
+#             direction.append(block_inf[current_i-1][current_j-1].dir)
+#             temporary_i=block_inf[current_i-1][current_j-1].parent_i
+#             temporary_j=block_inf[current_i-1][current_j-1].parent_j
+#             current_i , current_j =temporary_i ,temporary_j
+        
+#         direction.reverse()
+#         path.reverse()
+#         self.direction = direction
+#         print("dir", direction)
+#         print("path", path)
+#         self.path = path
+
+
+
+#     def ai_search(self, start_point, fruit_pos):
+#         visited_blocks=[[False for _ in range(20)] for _ in range(20)] 
+#         block_inf=[[Block() for _ in range(20)] for _ in range(20)]
+#         fruit_pos = (int(fruit_pos[0]), int(fruit_pos[1]))
+#         i,j= map(int, start_point)
+#         print("Start",i, j)
+#         block_inf[i -1][j- 1].f=0
+#         block_inf[i- 1][j-1].g=0
+#         block_inf[i-1][j-1].h=0
+#         block_inf[i-1][j-1].parent_i=i
+#         block_inf[i-1][j-1].parent_j=j
+#         block_inf[i-1][j-1].dir = (0,0)
+        
+#         open_list=[]
+#         heapq.heappush(open_list,(0.0,i,j))
+        
+#         fruit_found=False
+        
+
+                
+#         while open_list:
+#             best_block=heapq.heappop(open_list)
+#             i,j=best_block[1],best_block[2]
+#             print("best", i, j, self.snake_body[0])
+#             visited_blocks[i- 1][j-1]=True
+            
+#             possible_moves= [(0, 1), (0, -1), (1, 0), (-1, 0)]
+            
+#             for move in possible_moves:
+#                 next_i=i+move[0]
+#                 next_j=j+move[1]
+                
+                
+#                 if self.is_safe(next_i,next_j) and self.snake_body_collision(next_i, next_j, self.snake_body):
+#                     if visited_blocks[next_i-1][next_j-1]: continue
+
+#                     if self.fruit_eaten(next_i, next_j, fruit_pos):
+#                         block_inf[next_i-1][next_j-1].parent_i=i
+#                         block_inf[next_i-1][next_j-1].parent_j=j
+#                         block_inf[next_i-1][next_j-1].dir = move
+#                         self.reconstruct_path(block_inf,fruit_pos)
+#                         fruit_found=True
+
+                    
+#                     else:
+#                         g_new=block_inf[i-1][j-1].g+1.0
+#                         h_new=self.h_value_calculation(next_i,next_j,fruit_pos)
+#                         f_new=g_new+h_new
+                        
+#                         if block_inf[next_i-1][next_j-1].f==float("inf") or block_inf[next_i-1][next_j-1].f>f_new:
+#                             heapq.heappush(open_list,(f_new,next_i,next_j))
+#                             block_inf[next_i-1][next_j-1].f=f_new
+#                             block_inf[next_i-1][next_j-1].g=g_new
+#                             block_inf[next_i-1][next_j-1].h=h_new
+#                             block_inf[next_i-1][next_j-1].parent_i=i
+#                             block_inf[next_i-1][next_j-1].parent_j=j
+#                             block_inf[next_i-1][next_j-1].dir=move
+                    
+#         if not fruit_found:
+#             return False
+
+class Main:
+    def __init__(self, snake_color):
+        self.snake=Snake(snake_color)
+        self.fruit=Fruits()
+        self.bonus = Pepper()
+        self.score = 0
+        self.eaten = None
+        self.count_down = 0
+        self.button_click_sound=pygame.mixer.Sound("Project/Snake-game-project/ui-click-menu-modern-interface-select-small-01-230473.mp3")
         self.path = None
-        pass
+        self.direction = None
+
 
     def is_safe(self,row,col):
-        return (0<=row<20) and (0<=col<20)
+        return (1<=row<21) and (1<=col<21)
     
     def snake_body_collision(self, row, col, snake_body):
         for block in snake_body:
-            if Vector2(col, row) == block:
+            if Vector2(row, col) == block:
                 return False
         return True
 
     def fruit_eaten(self,row,col,fruit_pos):
         print(row, col, fruit_pos)
-        return (row,col)==fruit_pos
+        return row == int(fruit_pos[0]) and col == int(fruit_pos[1])
 
     def h_value_calculation(self,row,col, fruit_pos):
         return abs(row-fruit_pos[0])+abs(col-fruit_pos[1])
@@ -39,17 +154,22 @@ class AI:
     #def draw_path()
     def reconstruct_path(self,block_inf, fruit_pos):
         path=[]
+        direction = []
         current_i,current_j= map(int, fruit_pos)
-        print(current_i, current_j)
+        #print(current_i, current_j)
         
-        while block_inf[current_i][current_j].parent_i != current_i or block_inf[current_i][current_j].parent_j != current_j:
+        while block_inf[current_i-1][current_j-1].parent_i != current_i or block_inf[current_i-1][current_j-1].parent_j != current_j:
             path.append((current_i,current_j))
-            temporary_i=block_inf[current_i][current_j].parent_i
-            temporary_j=block_inf[current_i][current_j].parent_j
+            direction.append(block_inf[current_i-1][current_j-1].dir)
+            temporary_i=block_inf[current_i-1][current_j-1].parent_i
+            temporary_j=block_inf[current_i-1][current_j-1].parent_j
             current_i , current_j =temporary_i ,temporary_j
         
+        direction.reverse()
         path.reverse()
-        print(path)
+        self.direction = direction
+        print("dir", direction)
+        print("path", path)
         self.path = path
 
 
@@ -57,15 +177,15 @@ class AI:
     def ai_search(self, start_point, fruit_pos):
         visited_blocks=[[False for _ in range(20)] for _ in range(20)] 
         block_inf=[[Block() for _ in range(20)] for _ in range(20)]
-        
+        fruit_pos = (int(fruit_pos[0]), int(fruit_pos[1]))
         i,j= map(int, start_point)
-        i -= 1
-        j -= 1
-        block_inf[i][j].f=0
-        block_inf[i][j].g=0
-        block_inf[i][j].h=0
-        block_inf[i][j].parent_i=i
-        block_inf[i][j].parent_j=j
+        print("Start",i, j)
+        block_inf[i -1][j- 1].f=0
+        block_inf[i- 1][j-1].g=0
+        block_inf[i-1][j-1].h=0
+        block_inf[i-1][j-1].parent_i=i
+        block_inf[i-1][j-1].parent_j=j
+        block_inf[i-1][j-1].dir = (0,0)
         
         open_list=[]
         heapq.heappush(open_list,(0.0,i,j))
@@ -77,7 +197,8 @@ class AI:
         while open_list:
             best_block=heapq.heappop(open_list)
             i,j=best_block[1],best_block[2]
-            visited_blocks[i][j]=True
+            print("best", i, j, self.snake.body[0])
+            visited_blocks[i- 1][j-1]=True
             
             possible_moves= [(0, 1), (0, -1), (1, 0), (-1, 0)]
             
@@ -86,59 +207,51 @@ class AI:
                 next_j=j+move[1]
                 
                 
-                if self.is_safe(next_i,next_j) and self.snake_body_collision(next_i, next_j, self.snake_body):
-                    if visited_blocks[next_i][next_j]: continue
+                if self.is_safe(next_i,next_j) and self.snake_body_collision(next_i, next_j, self.snake.body):
+                    if visited_blocks[next_i-1][next_j-1]: continue
 
                     if self.fruit_eaten(next_i, next_j, fruit_pos):
-                        block_inf[next_i][next_j].parent_i=i
-                        block_inf[next_i][next_j].parent_j=j
+                        block_inf[next_i-1][next_j-1].parent_i=i
+                        block_inf[next_i-1][next_j-1].parent_j=j
+                        block_inf[next_i-1][next_j-1].dir = move
                         self.reconstruct_path(block_inf,fruit_pos)
                         fruit_found=True
+                        return
 
                     
                     else:
-                        g_new=block_inf[i][j].g+1.0
+                        g_new=block_inf[i-1][j-1].g+1.0
                         h_new=self.h_value_calculation(next_i,next_j,fruit_pos)
                         f_new=g_new+h_new
                         
-                        if block_inf[next_i][next_j].f==float("inf") or block_inf[next_i][next_j].f>f_new:
+                        if block_inf[next_i-1][next_j-1].f==float("inf") or block_inf[next_i-1][next_j-1].f>f_new:
                             heapq.heappush(open_list,(f_new,next_i,next_j))
-                            block_inf[next_i][next_j].f=f_new
-                            block_inf[next_i][next_j].g=g_new
-                            block_inf[next_i][next_j].h=h_new
-                            block_inf[next_i][next_j].parent_i=i
-                            block_inf[next_i][next_j].parent_j=j
+                            block_inf[next_i-1][next_j-1].f=f_new
+                            block_inf[next_i-1][next_j-1].g=g_new
+                            block_inf[next_i-1][next_j-1].h=h_new
+                            block_inf[next_i-1][next_j-1].parent_i=i
+                            block_inf[next_i-1][next_j-1].parent_j=j
+                            block_inf[next_i-1][next_j-1].dir=move
                     
         if not fruit_found:
             return False
-
-class Main:
     
-    def __init__(self, snake_color):
-        self.snake=Snake(snake_color)
-        self.fruit=Fruits()
-        self.ai = AI(self.snake.body)
-        self.bonus = Pepper()
-        self.score = 0
-        self.eaten = None
-        self.count_down = 0
-        self.button_click_sound=pygame.mixer.Sound("Project/Snake-game-project/ui-click-menu-modern-interface-select-small-01-230473.mp3")
-        
+
     def update(self):
-        self.snake.snake_moving()
+        self.snake_moving_ai()
+        #self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
         self.check_collision()
         self.draw_elements()
-        self.ai = AI(self.snake.body)
-        self.ai.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+
 
 
         #self.check_gameover()
 
     def draw_path(self):
-        self.final_path = self.ai.path
-        print(self.final_path)
+        self.final_path = self.path
+        #print(self.final_path)
         if self.final_path != None:
-            for point in self.final_path:
+            for point in self.final_path[:]:
                 
                 path_rect = pygame.Rect(int((point[0])*40), int((point[1])*40), 40, 40)
                 pygame.draw.rect(game_screen, "Red", path_rect)
@@ -150,10 +263,11 @@ class Main:
         pine_apple_score  = game_font_3.render("+10" , True, text_color)
         pine_apple_score_rect = pine_apple_score.get_rect(center = (int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 20))
 
+        self.draw_path()
         self.fruit.draw_fruit()
         if self.bonus.pepper_index == 1: self.bonus.draw_pepper()
         self.snake.draw_snake()
-        self.draw_path()
+
 
         if self.eaten =="apple": game_screen.blit(apple_score, apple_score_rect)
         elif self.eaten == "pine_apple": game_screen.blit(pine_apple_score, pine_apple_score_rect)
@@ -179,7 +293,6 @@ class Main:
                 self.eaten  ="pine_apple"
                 self.count_down = 0
 
-
             self.fruit.randomize() 
             self.bonus.index_randomize()
             
@@ -188,6 +301,10 @@ class Main:
                     self.fruit.randomize()
             
             self.snake.play_eating_sound()
+            
+            self.path = None  # Clear the path
+            self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+
 
         if snake_head_rect.colliderect(self.bonus.rect): #AI should enter here
             self.score += 15
@@ -198,29 +315,31 @@ class Main:
                 if self.bonus.pos == block:
                     self.bonus.randomize()
 
-        #if self.fruit.pos== self.snake.body[0]:
-         #   self.fruit.randomize()
-            
-          #  self.snake.add_block()
-        
-    #def check_gameover(self):
-     #   for block in self.snake.body[1:]:
-      #      if block==self.snake.body[0]:
-       #         self.game_over()
-                
-                
-        #if not 0<= self.snake.body[0].y < 20 or not 0<= self.snake.body[0].x < 20:
-         #   self.game_over()
-    
-    #def game_over(self):
-        #self.game_state = False
-
+ 
     def add_bonus(self):
         self.bonus.draw_pepper()
         
     def play_botton_click(self):
         self.button_click_sound.play()
         
+    def snake_moving_ai(self):
+        self.directions = self.direction
+        if self.directions and len(self.directions) > 0:
+            next_move = self.directions.pop(0)
+
+            self.snake.last_body = self.snake.body[:]
+            if self.snake.new_block==True:
+                prev_body=self.snake.body[:]
+                prev_body.insert(0,prev_body[0]+Vector2(next_move))
+                new_body=prev_body
+                self.snake.body=new_body[:] 
+                self.snake.new_block = False
+            else:
+                prev_body=self.snake.body[:-1]
+                prev_body.insert(0,prev_body[0]+Vector2(next_move))
+                new_body=prev_body
+                self.snake.body=new_body[:]
+        self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
 
 class Fruits:
     def __init__(self):
@@ -429,6 +548,8 @@ class Snake:
             prev_body.insert(0,prev_body[0]+self.direction)
             new_body=prev_body
             self.body=new_body[:] 
+
+
             
             
     def add_block(self):
