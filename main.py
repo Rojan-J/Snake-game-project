@@ -241,8 +241,9 @@ class Main:
             game_screen.blit(home, home_rect)
         
     def check_collision(self):
-        global ai_state, blinking_speed
+        global ai_state, blinking_speed, snake_color
         prev_blinking_speed = blinking_speed
+        prev_snake_color = snake_color
         snake_head_rect = pygame.Rect(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40), 40, 40)
     
         if snake_head_rect.colliderect(self.fruit.rect):
@@ -254,6 +255,7 @@ class Main:
                     pygame.time.set_timer(update_screen, difficulty)
                     ai_state = False
                     blinking_speed = prev_blinking_speed
+                    self.snake.snake_color = prev_snake_color
             if self.fruit.fruit_index//3 == 0: 
                 self.score += 5
                 self.snake.add_block()
@@ -316,6 +318,8 @@ class Main:
             pygame.time.set_timer(update_screen, 80)
             prev_blinking_speed = blinking_speed
             blinking_speed = 100
+            prev_snake_color = snake_color
+            self.snake.snake_color = "Red"
 
  
     def add_bonus(self):
@@ -926,6 +930,7 @@ while True:
                         game_over_start_time=None
                         start_page = False
 
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if home_page_click_rect.collidepoint(event.pos):
                         main.play_botton_click()
@@ -1003,6 +1008,17 @@ while True:
                 if event.key == pygame.K_DOWN:
                     if main.snake.direction.y !=-1:
                         main.snake.direction=Vector2(0,1)
+                if event.key == pygame.K_ESCAPE:
+                    background = default_background
+                    snake_color = "#5a6f19"
+                    text_color = "Black"
+                    game_over_sound_played = False
+                    game_over_start_time = None
+                    difficulty = 60
+                    game_state = False
+                    main.score =0
+                    start_page = True
+
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if home_rect.collidepoint(event.pos):
