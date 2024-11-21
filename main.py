@@ -211,7 +211,7 @@ class Main:
         self.snake.draw_snake()
 
         bonus_text = game_font_1.render("Warning: Bonus is finishing!", True, text_color)
-        bonus_text_rect = bonus_text.get_rect(center=(400, 100))
+        bonus_text_rect = bonus_text.get_rect(center=(440, 100))
         if self.bonus_count_down >=3:
             game_screen.blit(bonus_text, bonus_text_rect)
 
@@ -345,16 +345,16 @@ class Fruits:
         self.apple = pygame.transform.scale(self.apple, (40, 40))
         
         self.strawberry = pygame.image.load("Project/Snake-game-project/strawberry.png").convert_alpha()
-        self.strawberry= pygame.transform.scale(self.strawberry, (40, 50))
+        self.strawberry= pygame.transform.scale(self.strawberry, (32, 40))
         
         self.pineapple = pygame.image.load("Project/Snake-game-project/pineapple.png").convert_alpha()
-        self.pineapple = pygame.transform.scale(self.pineapple, (40, 60))
+        self.pineapple = pygame.transform.scale(self.pineapple, (27, 40))
         
         self.blueberry = pygame.image.load("Project/Snake-game-project/blueberry.png").convert_alpha()
         self.blueberry = pygame.transform.scale(self.blueberry, (40, 40))
         
         self.mango = pygame.image.load("Project/Snake-game-project/mango.png").convert_alpha()
-        self.mango = pygame.transform.scale(self.mango, (60, 60))
+        self.mango = pygame.transform.scale(self.mango, (40, 40))
 
         self.x= random.randint(1,19)
         self.y= random.randint(1,19)
@@ -365,7 +365,7 @@ class Fruits:
     def draw_fruit(self):       
         fruit = [self.apple, self.strawberry, self.pineapple, self.blueberry, self.mango]
         surf = fruit[self.fruit_index]
-        self.rect = surf.get_rect(topleft = (int(self.pos.x*40), int(self.pos.y*40)))
+        self.rect = surf.get_rect(center = (int((self.pos.x + 0.5)*40), int((self.pos.y+0.5)*40)))
         game_screen.blit(surf, self.rect)
         
     def randomize(self):
@@ -590,8 +590,8 @@ class Pepper:
 
     def draw_pepper(self):
         pepper = pygame.image.load("Project/Snake-game-project/pepper.png").convert_alpha()
-        pepper = pygame.transform.scale(pepper, (40, 60))
-        self.rect = pepper.get_rect(topleft = (int(self.pos.x*40), int(self.pos.y*40)))
+        pepper = pygame.transform.scale(pepper, (27, 40))
+        self.rect = pepper.get_rect(center = (int((self.pos.x + 0.5)*40), int((self.pos.y+0.5)*40)))
         game_screen.blit(pepper, self.rect)
 
     def index_randomize(self):
@@ -604,22 +604,19 @@ class Pepper:
 
 
 def settings():
-    global snake_color, background, difficulty, game_state, text_color, blinking_speed
+    global snake_color, background, difficulty, game_state, text_color, blinking_speed, light_bg, night_bg
 
     background_text = game_font_2.render("Background", True, "Black")
     background_text_rect = background_text.get_rect(center=(440, 60))
 
+    light_bg_icon = pygame.transform.scale(light_bg, (120, 120))
+    light_bg_icon_rect = light_bg_icon.get_rect(center= (300, 160))
 
-    light_bg = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
-    light_bg = pygame.transform.scale(light_bg, (120, 120))
-    light_bg_rect = light_bg.get_rect(center= (300, 160))
+    night_bg_icon = pygame.transform.scale(night_bg, (120, 120))
+    night_bg_icon_rect = night_bg_icon.get_rect(center= (580, 160))
 
-    night_bg = pygame.image.load("Project/Snake-game-project/dark_mode_background.png").convert_alpha()
-    night_bg = pygame.transform.scale(night_bg, (120, 120))
-    night_bg_rect = night_bg.get_rect(center= (580, 160))
-
-    selected_light_bg = pygame.Rect(light_bg_rect.topleft[0]- 3, light_bg_rect.topleft[1] -3, 126, 126)
-    selected_night_bg = pygame.Rect(night_bg_rect.topleft[0]- 3, night_bg_rect.topleft[1] -3, 126, 126)
+    selected_light_bg = pygame.Rect(light_bg_icon_rect.topleft[0]- 3, light_bg_icon_rect.topleft[1] -3, 126, 126)
+    selected_night_bg = pygame.Rect(night_bg_icon_rect.topleft[0]- 3, night_bg_icon_rect.topleft[1] -3, 126, 126)
     selected_bg = [selected_light_bg, selected_night_bg]
     selected_bg_index = 0
 
@@ -676,8 +673,8 @@ def settings():
         game_screen.fill("#bbff86")
         game_screen.blit(background_text, background_text_rect)
 
-        game_screen.blit(light_bg, light_bg_rect)
-        game_screen.blit(night_bg, night_bg_rect)
+        game_screen.blit(light_bg_icon, light_bg_icon_rect)
+        game_screen.blit(night_bg_icon, night_bg_icon_rect)
 
         game_screen.blit(snake_color_text, snake_color_text_rect)
         pygame.draw.rect(game_screen, "#5a6f19", snake_green)
@@ -696,12 +693,12 @@ def settings():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if light_bg_rect.collidepoint(event.pos):
+                if light_bg_icon_rect.collidepoint(event.pos):
                     selected_bg_index = 0
-                    background = pygame.transform.scale(light_bg, (797.5, 800))
+                    background = pygame.transform.scale(light_bg, (800, 800))
                     text_color = "Black"
 
-                if night_bg_rect.collidepoint(event.pos):
+                if night_bg_icon_rect.collidepoint(event.pos):
                     selected_bg_index = 1
                     background = pygame.transform.scale(night_bg, (800, 800))
                     text_color = "White"
@@ -745,7 +742,7 @@ def settings():
                 
                 if home_rect.collidepoint(event.pos):
                     main.play_botton_click()
-                    background = pygame.transform.scale(light_bg, (800, 797.5))
+                    background = default_background
                     snake_color = "#5a6f19"
                     text_color = "Black"
                     difficulty = 150
@@ -788,12 +785,12 @@ pygame.mixer.music.load("Project/Snake-game-project/Sneaky-Snitch(chosic.com).mp
 game_screen=pygame.display.set_mode((880,880),pygame.RESIZABLE | pygame.SCALED)   #pygame.scaled is added to prevent full screen problems
 pygame.display.set_caption("Snake")
 surface=pygame.Surface((400,400))
-background = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
-default_background = pygame.transform.scale(background, (800, 797.5))
+light_bg = pygame.image.load("Project/Snake-game-project/bg4.png").convert_alpha()
+night_bg = pygame.image.load("Project/Snake-game-project/night4.jpeg").convert_alpha()
+default_background = pygame.transform.scale(light_bg, (800, 800))
 
 snake_color = "#5a6f19"
-background = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
-background = pygame.transform.scale(background, (800, 797.5))
+background = default_background
 difficulty = 150
 blinking_speed = 60
 text_color = "Black"
@@ -874,9 +871,10 @@ while True:
                     main.snake.play_game_over()
                     game_over_sound_played=True
                     
-            
+                
                 game_over_title = game_font.render("Game Over!", True, text_color)
-                game_over_rect = game_over_title.get_rect(center= (440, 240))
+                if ai_state: game_over_rect = game_over_title.get_rect(center= (440, 120))
+                else: game_over_rect = game_over_title.get_rect(center= (440, 240))
 
                 restart = game_font_1.render("Press space to restart", True, text_color)
                 restart_rect = restart.get_rect(center=(440, 540))
@@ -884,12 +882,15 @@ while True:
                 home_page = game_font_2.render("Home Page", True, "Black")
                 home_page_click_rect = pygame.Rect(340, 590, 200, 100)
 
+                no_path_text = game_font_1.render("Sorry: There is no path available", True, text_color)
+                no_path_rect = no_path_text.get_rect(center = (440, 260))
                 last_score_text = game_font_4.render(f"Score: {main.score}", True, text_color)
                 last_score_rect = last_score_text.get_rect(center= (440, 390))
                 game_screen.blit(last_score_text, last_score_rect)
                 game_screen.blit(game_over_title, game_over_rect)
                 game_screen.blit(restart, restart_rect)
                 add_buttomn(game_screen, home_page_click_rect, home_page)
+                if ai_state: game_screen.blit(no_path_text, no_path_rect)
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
@@ -993,9 +994,11 @@ while True:
                     start_page = True
                     tutorial = False
                     ai_state =False
+                    pygame.time.set_timer(update_screen, difficulty)
                     
         game_screen.fill("#005e20")
-        game_screen.blit(background, (40, 40))    
+        back_rect = background.get_rect(topleft = (40, 40))
+        game_screen.blit(background, back_rect)    
         display_score(main)    
 
         #game_screen.fill((20,120,150))
