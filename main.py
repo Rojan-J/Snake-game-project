@@ -24,7 +24,7 @@ class Main:
         self.eaten = None
         self.count_down = 0
         self.bonus_count_down = 0
-        self.button_click_sound=pygame.mixer.Sound(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\ui-click-menu-modern-interface-select-small-01-230473.mp3")
+        self.button_click_sound=pygame.mixer.Sound("Project/Snake-game-project/ui-click-menu-modern-interface-select-small-01-230473.mp3")
         self.path = None
         self.direction = None
 
@@ -125,7 +125,7 @@ class Main:
             return False
     
 
-    def update(self):          
+    def update(self):    
         if ai_state: 
             self.snake_moving_ai()
         else: self.snake.snake_moving()
@@ -156,7 +156,6 @@ class Main:
 
     def draw_elements(self):
         self.count_down += 1
-        
         score_texts={
             "apple":"+5",
             "strawberry":"+5",
@@ -169,26 +168,12 @@ class Main:
             fruit_score = game_font_3.render(score_texts[self.eaten], True, text_color)
             fruit_score_rect = fruit_score.get_rect(center=(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 20))
             game_screen.blit(fruit_score, fruit_score_rect)
-                             
-        # apple_score = game_font_3.render("+5", True, text_color)
-        # apple_score_rect = apple_score.get_rect(center = (int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 20))
-        # pine_apple_score  = game_font_3.render("+10" , True, text_color)
-        # pine_apple_score_rect = pine_apple_score.get_rect(center = (int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 20))
 
         self.draw_path()
         self.fruit.draw_fruit()
         if not ai_state:
             if self.bonus.pepper_index == 1: self.bonus.draw_pepper()
         self.snake.draw_snake()
-
-
-        # if self.eaten =="apple": game_screen.blit(apple_score, apple_score_rect)
-        # elif self.eaten == "pine_apple": game_screen.blit(pine_apple_score, pine_apple_score_rect)
-
-        bonus_text = game_font_1.render("Warning: Bonus is finishing!", True, text_color)
-        bonus_text_rect = bonus_text.get_rect(center=(400, 100))
-        if self.bonus_count_down >=3:
-            game_screen.blit(bonus_text, bonus_text_rect)
 
         bonus_text = game_font_1.render("Warning: Bonus is finishing!", True, text_color)
         bonus_text_rect = bonus_text.get_rect(center=(400, 100))
@@ -301,56 +286,58 @@ class Main:
 
 class Fruits:
     def __init__(self):
+        self.apple = pygame.image.load("Project/Snake-game-project/apple1.png").convert_alpha()
+        self.apple = pygame.transform.scale(self.apple, (40, 40))
+        
+        self.strawberry = pygame.image.load("Project/Snake-game-project/strawberry.png").convert_alpha()
+        self.strawberry= pygame.transform.scale(self.strawberry, (40, 50))
+        
+        self.pineapple = pygame.image.load("Project/Snake-game-project/pineapple.png").convert_alpha()
+        self.pineapple = pygame.transform.scale(self.pineapple, (40, 60))
+        
+        self.blueberry = pygame.image.load("Project/Snake-game-project/blueberry.png").convert_alpha()
+        self.blueberry = pygame.transform.scale(self.blueberry, (40, 40))
+        
+        self.mango = pygame.image.load("Project/Snake-game-project/mango.png").convert_alpha()
+        self.mango = pygame.transform.scale(self.mango, (60, 60))
+
         self.x= random.randint(1,19)
         self.y= random.randint(1,19)
         self.pos=Vector2(self.x,self.y)
         self.rect = pygame.Rect(-1, -1, 1, 1)
         self.fruit_index = 0
 
-    def draw_fruit(self):        
-        apple = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\apple1.png").convert_alpha()
-        apple = pygame.transform.scale(apple, (40, 40))
-        
-        strawberry = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\strawberry.png").convert_alpha()
-        strawberry= pygame.transform.scale(apple, (40, 40))
-        
-        pineapple = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\pineapple.png").convert_alpha()
-        pineapple = pygame.transform.scale(pineapple, (40, 60))
-        
-        blueberry = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\blueberry.png").convert_alpha()
-        blueberry = pygame.transform.scale(apple, (40, 40))
-        
-        mango = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\mango.png").convert_alpha()
-        mango = pygame.transform.scale(apple, (50, 50))
-        
-        fruit = [apple, strawberry, pineapple, blueberry, mango]
+    def draw_fruit(self):       
+        fruit = [self.apple, self.strawberry, self.pineapple, self.blueberry, self.mango]
         surf = fruit[self.fruit_index]
         self.rect = surf.get_rect(topleft = (int(self.pos.x*40), int(self.pos.y*40)))
         game_screen.blit(surf, self.rect)
         
-        
     def randomize(self):
         self.fruit_index = random.choices([0,1,2,3,4],weights=[25,25,20,20,10])[0]
-        # if self.fruit_index // 3 == 1 : y_border = 19
-        # else: y_border = 20
+        if self.fruit_index in [1, 2, 4]: y_border = 19
+        else: y_border = 20
 
-        self.x= random.randint(1,20)
-        self.y= random.randint(1,20)
+        if self.fruit_index == 4: x_border = 19
+        else: x_border = 20
+
+        self.x= random.randint(1,x_border)
+        self.y= random.randint(1, y_border)
         self.pos=Vector2(self.x,self.y)
 
         
 class Snake:
     def __init__(self, snake_color):
-        open_eyes = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\eyes3.png").convert_alpha()
+        open_eyes = pygame.image.load("Project/Snake-game-project/eyes3.png").convert_alpha()
         open_eyes_scaled = pygame.transform.scale(open_eyes, (40, 40))
 
-        close_eyes = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\eye_closed.png").convert_alpha()
+        close_eyes = pygame.image.load("Project/Snake-game-project/eye_closed.png").convert_alpha()
         close_eyes_scaled = pygame.transform.scale(close_eyes, (40, 40))         
         
-        tongue = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\tongue.png").convert_alpha()
+        tongue = pygame.image.load("Project/Snake-game-project/tongue.png").convert_alpha()
         tongue_scaled = pygame.transform.scale(tongue, (40, 40))
 
-        end_eye = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\end_eye.png")
+        end_eye = pygame.image.load("Project/Snake-game-project/end_eye.png")
     
         self.body = [Vector2(5,10),Vector2(4,10),Vector2(3,10)]
         self.direction = Vector2(1,0)
@@ -363,10 +350,10 @@ class Snake:
         self.tongue_index = 0
         self.snake_color = snake_color
         
-        self.eating_sound=pygame.mixer.Sound(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\apple-munch-40169 (mp3cut.net).mp3")
-        self.hitting_wall_sound=pygame.mixer.Sound(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\hitting-wall-85571 (mp3cut.net).mp3")
-        self.self_hitting_sound=pygame.mixer.Sound(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\self-hitting-230542.mp3")
-        self.game_over_sound=pygame.mixer.Sound(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\game-over-89697.mp3")
+        self.eating_sound=pygame.mixer.Sound("Project/Snake-game-project/apple-munch-40169 (mp3cut.net).mp3")
+        self.hitting_wall_sound=pygame.mixer.Sound("Project/Snake-game-project/hitting-wall-85571 (mp3cut.net).mp3")
+        self.self_hitting_sound=pygame.mixer.Sound("Project/Snake-game-project/self-hitting-230542.mp3")
+        self.game_over_sound=pygame.mixer.Sound("Project/Snake-game-project/game-over-89697.mp3")
 
         
     def draw_snake(self):
@@ -547,7 +534,7 @@ class Pepper:
         self.pepper_index = 0
 
     def draw_pepper(self):
-        pepper = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\pepper.png").convert_alpha()
+        pepper = pygame.image.load("Project/Snake-game-project/pepper.png").convert_alpha()
         pepper = pygame.transform.scale(pepper, (40, 60))
         self.rect = pepper.get_rect(topleft = (int(self.pos.x*40), int(self.pos.y*40)))
         game_screen.blit(pepper, self.rect)
@@ -568,11 +555,11 @@ def settings():
     background_text_rect = background_text.get_rect(center=(440, 60))
 
 
-    light_bg = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\800x800_background (1).png").convert_alpha()
+    light_bg = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
     light_bg = pygame.transform.scale(light_bg, (120, 120))
     light_bg_rect = light_bg.get_rect(center= (300, 160))
 
-    night_bg = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\dark_mode_background.png").convert_alpha()
+    night_bg = pygame.image.load("Project/Snake-game-project/dark_mode_background.png").convert_alpha()
     night_bg = pygame.transform.scale(night_bg, (120, 120))
     night_bg_rect = night_bg.get_rect(center= (580, 160))
 
@@ -597,17 +584,17 @@ def settings():
     difficulty_text = game_font_2.render("Speed", True, "Black")
     difficulty_text_rect = difficulty_text.get_rect(center= (440, 540))
 
-    slow = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\turtle2.png").convert_alpha()
+    slow = pygame.image.load('Project/Snake-game-project/turtle2.png').convert_alpha()
     slow = pygame.transform.scale(slow, (120, 120))
     slow = pygame.transform.flip(slow,True, False)
     slow_text = game_font_3.render("Slow", True, "Black")
 
 
-    medium = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\snake2.png").convert_alpha()
+    medium = pygame.image.load("Project/Snake-game-project/snake2.png").convert_alpha()
     medium = pygame.transform.scale(medium, (120, 120))
     medium_text = game_font_3.render("Medium", True, "Black")
 
-    fast = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\cheetah.png").convert_alpha()
+    fast = pygame.image.load("Project/Snake-game-project/cheetah.png").convert_alpha()
     fast = pygame.transform.scale(fast, (120, 120))
     fast_text = game_font_3.render("Fast", True, "Black")
 
@@ -735,22 +722,22 @@ def check_game_over(main):
     if not 1<= main.snake.body[0].y < 21 or not 1<= main.snake.body[0].x < 21:
         main.snake.play_hitting_wall()
         game_state = False
-        
-pygame.mixer.pre_init(44100,-16,2,512)
 
+
+pygame.mixer.pre_init(44100,-16,2,512)
 
 pygame.init()
 pygame.mixer.init()
-pygame.mixer.music.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\Sneaky-Snitch(chosic.com).mp3")
+pygame.mixer.music.load("Project/Snake-game-project/Sneaky-Snitch(chosic.com).mp3")
 
 game_screen=pygame.display.set_mode((880,880))
 pygame.display.set_caption("Snake")
 surface=pygame.Surface((400,400))
-background = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\800x800_background (1).png").convert_alpha()
+background = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
 default_background = pygame.transform.scale(background, (800, 797.5))
 
 snake_color = "#5a6f19"
-background = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\800x800_background (1).png").convert_alpha()
+background = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
 background = pygame.transform.scale(background, (800, 797.5))
 difficulty = 150
 blinking_speed = 60
@@ -762,15 +749,15 @@ text_color = "Black"
 clock=pygame.time.Clock()
 
 #Fonts
-game_font = pygame.font.Font(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\JungleAdventurer.ttf", 150) #Name of the game
-game_font_1 = pygame.font.Font(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\JungleAdventurer.ttf", 50) #Our brand
-game_font_2 = pygame.font.Font(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\JungleAdventurer.ttf", 40) #keys
-game_font_3 = pygame.font.Font(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\JungleAdventurer.ttf", 20) #scores 
-game_font_4 = pygame.font.Font(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\JungleAdventurer.ttf", 100) #game_over_scores 
+game_font = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 150) #Name of the game
+game_font_1 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 50) #Our brand
+game_font_2 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 40) #keys
+game_font_3 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 20) #scores 
+game_font_4 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 100) #game_over_scores 
 
 
 #Start Page
-start_surf = pygame.image.load(r"C:\Users\LENOVO\OneDrive\Documents\GitHub\Snake-game-project\start_page.jpg").convert_alpha()
+start_surf = pygame.image.load("Project/Snake-game-project/start_page.jpg").convert_alpha()
 start_surf = pygame.transform.scale(start_surf, (880, 880))
 
 start_title = game_font.render("Snake", True, "Black")
@@ -813,6 +800,7 @@ def display_score(main):
 game_over_start_time=None
 game_over_sound_played=False
 
+tutorial_speed = 90
 
 while True:
     if not game_state:
@@ -873,10 +861,10 @@ while True:
                         main.score =0
                         start_page = True
         else:
-
+            
             if not pygame.mixer.music.get_busy():
                 pygame.mixer.music.play(-1) 
-                
+
             game_screen.blit(start_surf, (0,0))
             game_screen.blit(start_title, start_title_rect)
             game_screen.blit(ronil_brand, ronil_brand_rect)
@@ -891,7 +879,6 @@ while True:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if start_rect.collidepoint(event.pos):
                         main.play_botton_click()
-                        
                         if settings():
                             game_state = True
                             main = Main(snake_color)
@@ -902,7 +889,17 @@ while True:
                             start_page = True
                             
                     elif tutorial_rect.collidepoint(event.pos):
+                        pygame.time.set_timer(update_screen, tutorial_speed)
                         main.play_botton_click()
+                        pygame.mixer.music.stop()
+                        tutorial = True
+                        game_state = True
+                        start_page = False
+                        ai_state = True
+                        main = Main(snake_color)
+
+
+
 
 
     else:
