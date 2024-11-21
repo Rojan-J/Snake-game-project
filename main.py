@@ -39,7 +39,7 @@ class Main:
         return True
 
     def fruit_eaten(self,row,col,fruit_pos):
-        return row == int(fruit_pos[0]) and col == int(fruit_pos[1])
+        return row== int(fruit_pos[0]) and col == int(fruit_pos[1])
 
     def h_value_calculation(self,row,col, fruit_pos):
         return abs(row-fruit_pos[0])+abs(col-fruit_pos[1])
@@ -80,9 +80,9 @@ class Main:
         heapq.heappush(open_list,(0.0,i,j))
         
         fruit_found=False
+        all_path = False
         
-
-                
+       
         while open_list:
             best_block=heapq.heappop(open_list)
             i,j=best_block[1],best_block[2]
@@ -99,12 +99,12 @@ class Main:
                     if visited_blocks[next_i-1][next_j-1]: continue
 
                     if self.fruit_eaten(next_i, next_j, fruit_pos):
-                        block_inf[next_i-1][next_j-1].parent_i=i
-                        block_inf[next_i-1][next_j-1].parent_j=j
+                        block_inf[next_i-1][next_j-1].parent_i = i
+                        block_inf[next_i-1][next_j-1].parent_j = j
                         block_inf[next_i-1][next_j-1].dir = move
-                        self.reconstruct_path(block_inf,fruit_pos)
-                        fruit_found=True
-                        return
+                        self.reconstruct_path(block_inf, fruit_pos)
+                        fruit_found = True
+                        return 
 
                     
                     else:
@@ -122,8 +122,43 @@ class Main:
                             block_inf[next_i-1][next_j-1].dir=move
                     
         if not fruit_found:
-            return False
+            return True
     
+    def backup_path(self, start_point):
+        i, j = map(int, start_point)
+        possible_moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        max_free_space = -1
+        best_move = None
+
+        for move in possible_moves:
+            next_i = i + move[0]
+            next_j = j + move[1]
+            if self.is_safe(next_i, next_j) and self.snake_body_collision(next_i, next_j, self.snake.body):
+                free_space = self.calculate_free_space(next_i, next_j)
+                if free_space > max_free_space:
+                    max_free_space = free_space
+                    best_move = move
+        return best_move
+    
+    def calculate_free_space(self, i, j):
+        visited = set()
+        stack = [(i, j)]
+        free_space = 0
+
+        while stack:
+            x, y = stack.pop()
+            if (x, y) in visited or not self.is_safe(x, y) or not self.snake_body_collision(x, y, self.snake.body):
+                continue
+            visited.add((x, y))
+            free_space += 1
+
+            # Check adjacent cells
+            possible_moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+            for move in possible_moves:
+                stack.append((x + move[0], y + move[1]))
+
+        return free_space
+        
 
     def update(self):    
         if ai_state: 
@@ -267,22 +302,41 @@ class Main:
         self.button_click_sound.play()
         
     def snake_moving_ai(self):
-        self.directions = self.direction
-        if self.directions and len(self.directions) > 0:
-            self.snake.direction = Vector2(self.directions.pop(0))
-            self.snake.last_body = self.snake.body[:]
-            if self.snake.new_block==True:
-                prev_body=self.snake.body[:]
+        self.snake.last_body = self.snake.body[:]
+        if not self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos)):
+            self.directions = self.direction
+            if self.directions and len(self.directions) > 0:
+                self.snake.direction = Vector2(self.directions.pop(0))
+                self.snake.last_body = self.snake.body[:]
+                if self.snake.new_block==True:
+                    prev_body=self.snake.body[:]
+                    prev_body.insert(0,prev_body[0]+self.snake.direction)
+                    new_body=prev_body
+                    self.snake.body=new_body[:] 
+                    self.snake.new_block = False
+                else:
+                    prev_body=self.snake.body[:-1]
+                    prev_body.insert(0,prev_body[0]+self.snake.direction)
+                    new_body=prev_body
+                    self.snake.body=new_body[:]
+        else:
+            best_move = self.backup_path(tuple(self.snake.body[0]))
+            if best_move:
+                self.snake.direction = Vector2(best_move)
+                prev_body=self.snake.body[:-1]
                 prev_body.insert(0,prev_body[0]+self.snake.direction)
                 new_body=prev_body
-                self.snake.body=new_body[:] 
-                self.snake.new_block = False
+                self.snake.body=new_body[:]
+                self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+            
             else:
                 prev_body=self.snake.body[:-1]
                 prev_body.insert(0,prev_body[0]+self.snake.direction)
                 new_body=prev_body
                 self.snake.body=new_body[:]
-        self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+                self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+
+                
 
 class Fruits:
     def __init__(self):
