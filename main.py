@@ -514,10 +514,26 @@ class Snake:
                 self.tongue_index += 0.02
                 if self.tongue_index > 2: self.tongue_index = 0
 
-
-            else:  # Other blocks without rounded corners
+        
+            elif index <len(self.body)-1:  # Other blocks without rounded corners
                 pygame.draw.rect(game_screen, self.snake_color, block_rect) 
             
+            else:  #tail block
+                prev_block=self.body[index-1]
+                direction=block-prev_block
+                
+                if direction==pygame.Vector2(1,0):
+                    pygame.draw.circle(game_screen, self.snake_color, (x, y + 20), 20)  # Rounded tail
+                
+                elif direction==pygame.Vector2(-1,0):
+                    pygame.draw.circle(game_screen, self.snake_color, (x + 40, y + 20), 20)
+                
+                elif direction==pygame.Vector2(0,1):
+                    pygame.draw.circle(game_screen, self.snake_color, (x + 20, y), 20)
+                
+                elif direction==pygame.Vector2(0,-1):
+                    pygame.draw.circle(game_screen, self.snake_color, (x + 20, y + 40), 20)
+                
     def draw_end_snake(self):
         for index, block in enumerate(self.body):
             x=int(block.x*40)
@@ -565,10 +581,25 @@ class Snake:
                 game_screen.blit(rotated_tongue, tongue_rect)
                 game_screen.blit(end_eyes_scaled, end_eyes_rect)
 
-            else:  # Other blocks without rounded corners
-                pygame.draw.rect(game_screen, self.snake_color, block_rect) 
-
-
+            else:  #tail block
+                if index==len(self.body)-1:
+                    prev_block=self.body[index-1]
+                    direction=block-prev_block
+                            
+                    if direction==pygame.Vector2(1,0):
+                                pygame.draw.circle(game_screen, self.snake_color, (x, y + 20), 20)  # Rounded tail
+                            
+                    elif direction==pygame.Vector2(-1,0):
+                                pygame.draw.circle(game_screen, self.snake_color, (x + 40, y + 20), 20)
+                            
+                    elif direction==pygame.Vector2(0,1):
+                                pygame.draw.circle(game_screen, self.snake_color, (x + 20, y), 20)
+                            
+                    elif direction==pygame.Vector2(0,-1):
+                                pygame.draw.circle(game_screen, self.snake_color, (x + 20, y + 40), 20)
+                else:
+                    pygame.draw.rect(game_screen,self.snake_color,block_rect)
+                    
     def undo(self):
         self.body = self.last_body
 
