@@ -287,6 +287,7 @@ class Main:
             for _ in range(3): self.snake.add_block()
             self.bonus.randomize()
             self.bonus.index_randomize()
+            self.snake.bonus_sound.play()
             while not self.check_pepper_pos():
                 self.bonus.randomize()
             ai_state = True
@@ -408,7 +409,7 @@ class Snake:
         self.hitting_wall_sound=pygame.mixer.Sound("Project/Snake-game-project/hitting-wall-85571 (mp3cut.net).mp3")
         self.self_hitting_sound=pygame.mixer.Sound("Project/Snake-game-project/self-hitting-230542.mp3")
         self.game_over_sound=pygame.mixer.Sound("Project/Snake-game-project/game-over-89697.mp3")
-
+        self.bonus_sound=pygame.mixer.Sound("Project/Snake-game-project/supernatural-explosion-104295.mp3")
         
     def draw_snake(self):
         for index, block in enumerate(self.body):
@@ -784,7 +785,7 @@ pygame.init()
 pygame.mixer.init()
 pygame.mixer.music.load("Project/Snake-game-project/Sneaky-Snitch(chosic.com).mp3")
 
-game_screen=pygame.display.set_mode((880,880))
+game_screen=pygame.display.set_mode((880,880),pygame.RESIZABLE | pygame.SCALED)   #pygame.scaled is added to prevent full screen problems
 pygame.display.set_caption("Snake")
 surface=pygame.Surface((400,400))
 background = pygame.image.load("Project/Snake-game-project/bg3.png").convert_alpha()
