@@ -27,7 +27,11 @@ class Main:
         self.button_click_sound=pygame.mixer.Sound("Project/Snake-game-project/ui-click-menu-modern-interface-select-small-01-230473.mp3")
         self.path = None
         self.direction = None
-
+        
+        self.boom_image=pygame.image.load("Project/Snake-game-project/[CITYPNG.COM]HD Bomb Boom Comic Cartoon Explosion PNG - 1000x1000.png")
+        self.boom_image = pygame.transform.scale(self.boom_image, (100, 100))
+        self.boom_display_time=0
+        
 
     def is_safe(self,row,col):
         return (1<=row<21) and (1<=col<21)
@@ -203,7 +207,21 @@ class Main:
             fruit_score = game_font_3.render(score_texts[self.eaten], True, text_color)
             fruit_score_rect = fruit_score.get_rect(center=(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 20))
             game_screen.blit(fruit_score, fruit_score_rect)
+        
+        
+        # if self.boom_display_time>0:
+        #     boom_rect = self.boom_image.get_rect(center=(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 40))  
+        if self.boom_display_time > 0:
+        # Position the boom image in front of the snake's head depending on its direction
+             
+            if self.snake.direction == Vector2(1, 0) or Vector2(-1,0):  
+                boom_rect = self.boom_image.get_rect(center=(int(self.snake.body[0].x * 40) + 40, int(self.snake.body[0].y * 40)-40)) 
+            elif self.snake.direction == Vector2(0, -1) or Vector2(0,1):  
+                boom_rect = self.boom_image.get_rect(center=(int(self.snake.body[0].x * 40)-60, int(self.snake.body[0].y * 40)))  
 
+            game_screen.blit(self.boom_image, boom_rect)
+            self.boom_display_time-=1
+             
         self.draw_path()
         self.fruit.draw_fruit()
         if not ai_state:
@@ -284,9 +302,13 @@ class Main:
 
         if snake_head_rect.colliderect(self.bonus.rect): #AI should enter here
             self.score += 15
+
+            self.boom_display_time=120
+            
             for _ in range(3): self.snake.add_block()
             self.bonus.randomize()
             self.bonus.index_randomize()
+            
             self.snake.bonus_sound.play()
             while not self.check_pepper_pos():
                 self.bonus.randomize()
