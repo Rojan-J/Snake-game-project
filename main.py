@@ -180,7 +180,7 @@ class Main:
     
     def check_pepper_pos(self):
         for block in self.snake.body:
-            if self.bonus.pos == block:
+            if self.bonus.pos == block or self.bonus.pos==self.fruit.pos:
                 return False
 
         return True
@@ -627,6 +627,7 @@ class Pepper:
         self.x= random.randint(1,20)
         self.y= random.randint(1,19)
         self.pos=Vector2(self.x,self.y)
+        
 
 
 def settings():
