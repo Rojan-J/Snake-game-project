@@ -183,9 +183,6 @@ class Main:
             if self.bonus.pos == block or self.bonus.pos==self.fruit.pos:
                 return False
 
-        if self.bonus.pos == self.fruit.pos:
-            return False
-
         return True
 
     def draw_path(self):
@@ -304,25 +301,25 @@ class Main:
                 self.path = None  # Clear the path
                 self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
 
-        if not ai_state:
-            if snake_head_rect.colliderect(self.bonus.rect): #AI should enter here
-                self.score += 15
 
-                self.boom_display_time=120
-                
-                for _ in range(3): self.snake.add_block()
+        if snake_head_rect.colliderect(self.bonus.rect): #AI should enter here
+            self.score += 15
+
+            self.boom_display_time=120
+            
+            for _ in range(3): self.snake.add_block()
+            self.bonus.randomize()
+            self.bonus.index_randomize()
+            
+            self.snake.bonus_sound.play()
+            while not self.check_pepper_pos():
                 self.bonus.randomize()
-                self.bonus.index_randomize()
-                
-                self.snake.bonus_sound.play()
-                while not self.check_pepper_pos():
-                    self.bonus.randomize()
-                ai_state = True
-                pygame.time.set_timer(update_screen, 80)
-                prev_blinking_speed = blinking_speed
-                blinking_speed = 100
-                prev_snake_color = snake_color
-                self.snake.snake_color = "Red"
+            ai_state = True
+            pygame.time.set_timer(update_screen, 80)
+            prev_blinking_speed = blinking_speed
+            blinking_speed = 100
+            prev_snake_color = snake_color
+            self.snake.snake_color = "Red"
 
  
     def add_bonus(self):
@@ -543,9 +540,8 @@ class Snake:
             y=int(block.y*40)
             block_rect=pygame.Rect(x,y,40,40)
             
-            if index == 0:  # Head of the snake               
-                # Determine which corners to round based on direction
-                if self.direction == Vector2(1, 0):  # Moving right
+            if index == 0:              
+                if self.direction == Vector2(1, 0): 
                     pygame.draw.rect(game_screen, self.snake_color, block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
                     end_eyes_scaled = pygame.transform.rotate(self.end_eyes, 0)
                     end_eyes_rect = end_eyes_scaled.get_rect(center=(x + 20, y))
@@ -799,6 +795,7 @@ def settings():
                     game_over_sound_played=False
                     game_over_start_time=None
                     pygame.mixer.music.stop()
+                    ai_state=False
                     return True
                 
                 if home_rect.collidepoint(event.pos):
@@ -918,6 +915,7 @@ tutorial_speed = 90
 while True:
     if not game_state:
         if not start_page:
+            ai_state=False
             main.snake.undo()
             main.snake.draw_end_snake()
             #Gameover Page
@@ -974,14 +972,10 @@ while True:
                         text_color = "Black"
                         game_over_sound_played = False
                         game_over_start_time = None
-                        difficulty = 150
-                        blinking_speed = 60
+                        difficulty = 60
                         game_state = False
                         main.score =0
                         start_page = True
-                        ai_state = False
-                        tutorial= False
-                        pygame.time.set_timer(update_screen, difficulty)
         else:
             
             if not pygame.mixer.music.get_busy():
@@ -1001,17 +995,6 @@ while True:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if start_rect.collidepoint(event.pos):
                         main.play_botton_click()
-                        background = default_background
-                        snake_color = "#5a6f19"
-                        text_color = "Black"
-                        difficulty = 150
-                        blinking_speed = 60
-                        game_state = False
-                        main.score =0
-                        start_page = True
-                        ai_state = False
-                        tutorial = False
-                        pygame.time.set_timer(update_screen, difficulty)
                         if settings():
                             game_state = True
                             main = Main(snake_color)
@@ -1064,14 +1047,10 @@ while True:
                     text_color = "Black"
                     game_over_sound_played = False
                     game_over_start_time = None
-                    difficulty = 150
-                    blinking_speed = 60
+                    difficulty = 60
                     game_state = False
                     main.score =0
                     start_page = True
-                    ai_state = False
-                    tutorial = False
-                    pygame.time.set_timer(update_screen, difficulty)
 
             
             if event.type == pygame.MOUSEBUTTONDOWN:
