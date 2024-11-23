@@ -1,5 +1,5 @@
 # STEP1
-- Basics of a snake game: Design a grid whithin which sbake can move and eat the fruit
+- Basics of a snake game: Design a grid whithin which snake can move and eat the fruit
 
 # STEP2
 - Graphical options: Adding feautres like background, sound, etc. to our snake.
