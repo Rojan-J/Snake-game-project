@@ -19,7 +19,7 @@ class Main:     #containing snakke, fruit and AI logic
     def __init__(self, snake_color):
         self.snake=Snake(snake_color)
         self.fruit=Fruits()
-        self.bonus = Pepper()
+        self.bonus = Bonus()
         self.score = 0
         self.eaten = None
         self.count_down = 0
@@ -32,6 +32,8 @@ class Main:     #containing snakke, fruit and AI logic
         self.boom_image=pygame.image.load("Project/Snake-game-project/[CITYPNG.COM]HD Bomb Boom Comic Cartoon Explosion PNG - 1000x1000.png")
         self.boom_image = pygame.transform.scale(self.boom_image, (100, 100))
         self.boom_display_time=0
+        self.mango_bonus = False
+        self.mango_count_down  =0 
         
     #A* algorithm part:
     
@@ -210,14 +212,18 @@ class Main:     #containing snakke, fruit and AI logic
             "strawberry":"+5",
             "pineapple":"+10",
             "blueberry":"+10",
-            "mango":"+15"
         }
         
         if self.eaten:
             fruit_score = game_font_3.render(score_texts[self.eaten], True, text_color)
             fruit_score_rect = fruit_score.get_rect(center=(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 20))
             game_screen.blit(fruit_score, fruit_score_rect)
-        
+         
+        if self.mango_bonus:
+            self.mango_count_down += 1
+            mango_eaten = game_font_1.render("+15; Mango has been eaten!", True, text_color)
+            mango_eaten_rect = mango_eaten.get_rect(center = (440, 110))
+            game_screen.blit(mango_eaten, mango_eaten_rect)
         
         if self.boom_display_time > 0:   #draw explosion effect when pepper is eaten
              
@@ -233,7 +239,9 @@ class Main:     #containing snakke, fruit and AI logic
         self.fruit.draw_fruit()
         
         if not ai_state:    #draw pepper only in non-ai mode
-            if self.bonus.pepper_index == 1: self.bonus.draw_pepper()
+            if self.bonus.bonus_index == 1: self.bonus.draw_bonus()
+
+        if self.bonus.bonus_index == 2: self.bonus.draw_bonus()
         self.snake.draw_snake()
 
         bonus_text = game_font_1.render("Warning: Bonus is finishing!", True, text_color)
@@ -245,6 +253,10 @@ class Main:     #containing snakke, fruit and AI logic
         if self.count_down > 30: 
             self.eaten = None
             self.count_down = 0
+            
+        if self.mango_count_down > 60:
+            self.mango_bonus = False
+            self.mango_count_down = 0
 
         if tutorial:
             game_screen.blit(home, home_rect)
@@ -294,12 +306,6 @@ class Main:     #containing snakke, fruit and AI logic
                 self.eaten  ="blueberry"
                 self.count_down = 0
 
-            elif self.fruit.fruit_index == 4: 
-                self.score += 15
-                for _ in range(3): self.snake.add_block()
-                self.eaten  ="mango"
-                self.count_down = 0
-
             #randomize fruit and pepper positions
             self.fruit.randomize()
             self.bonus.index_randomize()
@@ -314,42 +320,68 @@ class Main:     #containing snakke, fruit and AI logic
             
             if ai_state:   #recompute ai path after eating the fruit
                 self.path = None  # Clear the path
-                self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+                self.ai_search(tuple(self.snake.body[0]), tuple(self.best_goal()))
 
 
         if snake_head_rect.colliderect(self.bonus.rect): #AI should enter here
-            self.score += 15
+            if self.bonus.bonus_index == 1:
+                self.score += 15
 
-            self.boom_display_time=120
-            
-            for _ in range(3): self.snake.add_block()  #add 3 blocks to snake's body
-            
-            self.bonus.randomize()
-            self.bonus.index_randomize()
-            self.snake.bonus_sound.play()
-            
-            while not self.check_pepper_pos():
-                self.bonus.randomize()
+                self.boom_display_time=120
                 
-            ai_state = True
-            pygame.time.set_timer(update_screen, 80)
-            prev_blinking_speed = blinking_speed
-            blinking_speed = 100
-            prev_snake_color = snake_color
-            self.snake.snake_color = "Red"
+                for _ in range(3): self.snake.add_block()  #add 3 blocks to snake's body
+                
+                self.bonus.randomize()
+                self.bonus.index_randomize()
+                self.snake.pepper_sound.play()
+                
+                while not self.check_pepper_pos():
+                    self.bonus.randomize()
+                ai_state = True
+                pygame.time.set_timer(update_screen, 80)
+                prev_blinking_speed = blinking_speed
+                blinking_speed = 100
+                prev_snake_color = snake_color
+                self.snake.snake_color = "Red"
+            
+            elif self.bonus.bonus_index == 2:
+                self.mango_bonus = True
+                self.score += 15
+                for _ in range(3): self.snake.add_block()  #add 3 blocks to snake's body
+                
+                self.bonus.randomize()
+                self.bonus.index_randomize()
+                while not self.check_pepper_pos():
+                    self.bonus.randomize()
+                self.snake.mango_sound.play()
 
  
-    def add_bonus(self):
-        self.bonus.draw_pepper()
         
     def play_botton_click(self):
         self.button_click_sound.play()
+
+    def best_goal(self):
+        
+        if self.bonus.bonus_index == 2:
+            scores = {
+                0: 5,
+                1 : 5,
+                2 :10,
+                3 :10,
+                4 :15
+            }
+            bonus_point = 15 /self.h_value_calculation(int(self.snake.body[0].x), int(self.snake.body[0].y), self.bonus.pos)
+            fruit_point = scores[self.fruit.fruit_index] / self.h_value_calculation(int(self.snake.body[0].x), int(self.snake.body[0].y), self.fruit.pos)
+
+            if bonus_point > fruit_point:
+                return self.bonus.pos
+        return self.fruit.pos  
         
     def snake_moving_ai(self):
         
         self.snake.last_body = self.snake.body[:]
         
-        if not self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos)):
+        if not self.ai_search(tuple(self.snake.body[0]), tuple(self.best_goal())):
             self.directions = self.direction
             
             if self.directions and len(self.directions) > 0:
@@ -378,14 +410,14 @@ class Main:     #containing snakke, fruit and AI logic
                 prev_body.insert(0,prev_body[0]+self.snake.direction)
                 new_body=prev_body
                 self.snake.body=new_body[:]
-                self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+                self.ai_search(tuple(self.snake.body[0]), tuple(self.best_goal()))
             
             else:        #continue moving in the new direction if no valid path exists
                 prev_body=self.snake.body[:-1]
                 prev_body.insert(0,prev_body[0]+self.snake.direction)
                 new_body=prev_body
                 self.snake.body=new_body[:]
-                self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
+                self.ai_search(tuple(self.snake.body[0]), tuple(self.best_goal()))
 
                 
 class Fruits:
@@ -404,8 +436,6 @@ class Fruits:
         self.blueberry = pygame.image.load("Project/Snake-game-project/blueberry.png").convert_alpha()
         self.blueberry = pygame.transform.scale(self.blueberry, (40, 40))
         
-        self.mango = pygame.image.load("Project/Snake-game-project/mango.png").convert_alpha()
-        self.mango = pygame.transform.scale(self.mango, (40, 40))
 
         #set initial fruit positions and index
         self.x= random.randint(1,19)
@@ -415,7 +445,7 @@ class Fruits:
         self.fruit_index = 0   #determines the type of fruit which is going to display
 
     def draw_fruit(self):       
-        fruit = [self.apple, self.strawberry, self.pineapple, self.blueberry, self.mango]
+        fruit = [self.apple, self.strawberry, self.pineapple, self.blueberry]
         surf = fruit[self.fruit_index]
         
         #set the rect for the chosen fruit for its collision detection
@@ -425,15 +455,9 @@ class Fruits:
     def randomize(self):
         #choose the fruit type that is going to display
         #fruits with higher score has a bit less chance to display on the screen
-        self.fruit_index = random.choices([0,1,2,3,4],weights=[25,25,20,20,10])[0]
-        if self.fruit_index in [1, 2, 4]: y_border = 19
-        else: y_border = 20
-
-        if self.fruit_index == 4: x_border = 19
-        else: x_border = 20
-
-        self.x= random.randint(1,x_border)
-        self.y= random.randint(1, y_border)
+        self.fruit_index = random.choices([0,1,2,3],weights=[25,25,20,20])[0]
+        self.x= random.randint(1,20)
+        self.y= random.randint(1, 20)
         self.pos=Vector2(self.x,self.y)
 
         
@@ -468,7 +492,8 @@ class Snake:
         self.hitting_wall_sound=pygame.mixer.Sound("Project/Snake-game-project/hitting-wall-85571 (mp3cut.net).mp3")
         self.self_hitting_sound=pygame.mixer.Sound("Project/Snake-game-project/self-hitting-230542.mp3")
         self.game_over_sound=pygame.mixer.Sound("Project/Snake-game-project/game-over-89697.mp3")
-        self.bonus_sound=pygame.mixer.Sound("Project/Snake-game-project/supernatural-explosion-104295.mp3")
+        self.pepper_sound=pygame.mixer.Sound("Project/Snake-game-project/supernatural-explosion-104295.mp3")
+        self.mango_sound=pygame.mixer.Sound("Project/Snake-game-project/mango_sound.mp3")
         
     def draw_snake(self):    #draw the snake on the game screen
         
@@ -679,24 +704,32 @@ class Snake:
         self.game_over_sound.play()
 
 
-class Pepper:
+class Bonus:
     def __init__(self):
+        #upload and scale the bonus image
+        self.pepper = pygame.image.load("Project/Snake-game-project/pepper.png").convert_alpha()
+        self.pepper = pygame.transform.scale(self.pepper, (27, 40))
+
+        self.mango = pygame.image.load("Project/Snake-game-project/mango.png").convert_alpha()
+        self.mango = pygame.transform.scale(self.mango, (40, 40))
+
         self.x= random.randint(1,19)
         self.y= random.randint(1,19)
         self.pos=Vector2(self.x,self.y)
         self.rect = pygame.Rect(-1, -1, 1, 1)  #preholder rect for collisionn
-        self.pepper_index = 0
+        self.bonus_index = 0
 
-    def draw_pepper(self):
-        #upload and scale the bonus image
-        pepper = pygame.image.load("Project/Snake-game-project/pepper.png").convert_alpha()
-        pepper = pygame.transform.scale(pepper, (27, 40))
+    def draw_bonus(self):
         #set the rect for collision
-        self.rect = pepper.get_rect(center = (int((self.pos.x + 0.5)*40), int((self.pos.y+0.5)*40)))
-        game_screen.blit(pepper, self.rect)  #draw the pepper on the screen
+        if self.bonus_index == 1:
+            self.rect = self.pepper.get_rect(center = (int((self.pos.x + 0.5)*40), int((self.pos.y+0.5)*40)))
+            game_screen.blit(self.pepper, self.rect) #draw the pepper on the screen
+        elif self.bonus_index == 2:
+            self.rect = self.mango.get_rect(center = (int((self.pos.x + 0.5)*40), int((self.pos.y+0.5)*40)))
+            game_screen.blit(self.mango, self.rect) #draw the mango on the screen
 
     def index_randomize(self):
-        self.pepper_index = random.randint(0,8)   #chooose the random index for the pepper( the pepper is going to display only if 1 was selected)
+        self.bonus_index = random.randint(0,8)   #chooose the random index for the pepper( the pepper is going to display only if 1 was selected)
         
     def randomize(self):
         self.x= random.randint(1,20)
@@ -985,7 +1018,6 @@ tutorial_speed = 90  #set tutorial speed
 while True:
     if not game_state:  #check if the game is not in the play
         if not start_page:
-            ai_state=False
             main.snake.undo()
             main.snake.draw_end_snake()  #draw the snake in its final state
             
@@ -1043,7 +1075,10 @@ while True:
                         text_color = "Black"
                         game_over_sound_played = False
                         game_over_start_time = None
-                        difficulty = 60
+                        ai_state = False
+                        tutorial = False
+                        difficulty = 150
+                        blinking_speed = 60
                         game_state = False
                         main.score =0
                         start_page = True    #return to start page
@@ -1069,6 +1104,17 @@ while True:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if start_rect.collidepoint(event.pos):    #if start botton is clicked
                         main.play_botton_click()
+                        background = default_background
+                        snake_color = "#5a6f19"
+                        text_color = "Black"
+                        difficulty = 150
+                        blinking_speed = 60
+                        game_state = False
+                        main.score =0
+                        start_page = True
+                        ai_state = False
+                        tutorial = False
+                        pygame.time.set_timer(update_screen, difficulty)
                         if settings():                        #show settig page
                             game_state = True
                             main = Main(snake_color)
@@ -1122,10 +1168,14 @@ while True:
                     text_color = "Black"
                     game_over_sound_played = False
                     game_over_start_time = None
-                    difficulty = 60
+                    difficulty = 150
+                    blinking_speed = 60
                     game_state = False
                     main.score =0
                     start_page = True
+                    ai_state = False
+                    tutorial = False
+                    pygame.time.set_timer(update_screen, difficulty)
 
             
             if event.type == pygame.MOUSEBUTTONDOWN:   
