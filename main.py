@@ -80,6 +80,9 @@ class Main:     #containing snakke, fruit and AI logic
         
         fruit_pos = (int(fruit_pos[0]), int(fruit_pos[1]))
         i,j= map(int, start_point)
+
+        if (i- 1) > 19 or (j - 1) > 19:
+            return
         
         #set the start block's costs to 0
         block_inf[i -1][j- 1].f=0
@@ -219,13 +222,6 @@ class Main:     #containing snakke, fruit and AI logic
             fruit_score_rect = fruit_score.get_rect(center=(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 20))
             game_screen.blit(fruit_score, fruit_score_rect)
          
-        if self.mango_bonus:
-            self.mango_count_down += 1
-            #displaying mango bonus massage
-            mango_eaten = game_font_1.render("+15; Mango has been eaten!", True, text_color)
-            mango_eaten_rect = mango_eaten.get_rect(center = (440, 110))
-            game_screen.blit(mango_eaten, mango_eaten_rect)
-        
         if self.boom_display_time > 0:   #draw explosion effect when pepper is eaten
              
             if self.snake.direction == Vector2(1, 0) or Vector2(-1,0):   #horizontal movement
@@ -245,11 +241,22 @@ class Main:     #containing snakke, fruit and AI logic
         if self.bonus.bonus_index == 2: self.bonus.draw_bonus()    #draw mango randomly both in ai and player mode
         self.snake.draw_snake()
 
-        bonus_text = game_font_1.render("Warning: Bonus is finishing!", True, text_color)
+        bonus_text = game_font_1.render(f"Warning: Bonus is finishing!", True, text_color)
+        count_down_text = game_font_1.render(f"{5 - self.bonus_count_down} ... ", True, text_color)
         bonus_text_rect = bonus_text.get_rect(center=(440, 100))
-        
-        if self.bonus_count_down >=3:
+        count_down_rect = count_down_text.get_rect(center=(440, 150))
+
+        if self.bonus_count_down >=2:
             game_screen.blit(bonus_text, bonus_text_rect)
+            game_screen.blit(count_down_text, count_down_rect)
+
+        if self.mango_bonus:
+            self.mango_count_down += 1
+            #displaying mango bonus massage
+            mango_eaten = game_font_1.render("+15; Mango has been eaten!", True, text_color)
+            mango_eaten_rect = mango_eaten.get_rect(center = (440, 110))
+            game_screen.blit(mango_eaten, mango_eaten_rect)
+        
 
         if self.count_down > 30: 
             self.eaten = None
@@ -325,7 +332,7 @@ class Main:     #containing snakke, fruit and AI logic
 
 
         if snake_head_rect.colliderect(self.bonus.rect): #AI should enter here
-            if self.bonus.bonus_index == 1:
+            if self.bonus.bonus_index == 1 and not tutorial:
                 self.score += 15
 
                 self.boom_display_time=120
@@ -497,7 +504,7 @@ class Snake:
         self.self_hitting_sound=pygame.mixer.Sound("Project/Snake-game-project/self-hitting-230542.mp3")
         self.game_over_sound=pygame.mixer.Sound("Project/Snake-game-project/game-over-89697.mp3")
         self.pepper_sound=pygame.mixer.Sound("Project/Snake-game-project/supernatural-explosion-104295.mp3")
-        self.mango_sound=pygame.mixer.Sound("Project/Snake-game-project/sound-effect-twinklesparkle-115095.mp3")
+        self.mango_sound=pygame.mixer.Sound("Project/Snake-game-project/mango_sound.mp3")
         
     def draw_snake(self):    #draw the snake on the game screen
         
