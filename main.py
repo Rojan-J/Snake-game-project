@@ -1,21 +1,21 @@
 import pygame
 import sys
 import random
-from pygame.math import Vector2
+from pygame.math import Vector2  #using vector2 to represent the 2D positions in game_screen grid
 
 import math
 import heapq
 
-class Block:
+class Block:    #representing a block class of properties for path finding
     def __init__(self):
-        self.parent_i=10
+        self.parent_i=10        #row and col indexes for start position
         self.parent_j=5
-        self.f=float("inf")
-        self.g=float("inf")
-        self.h=0
+        self.f=float("inf")     #f= g+h
+        self.g=float("inf")     #g: movement cost from start node to a given node
+        self.h=0                #h: cost to move from the given node to the final destination
         self.dir = None
 
-class Main:
+class Main:     #containing snakke, fruit and AI logic
     def __init__(self, snake_color):
         self.snake=Snake(snake_color)
         self.fruit=Fruits()
@@ -28,35 +28,39 @@ class Main:
         self.path = None
         self.direction = None
         
+        #load explosion image for bonus part
         self.boom_image=pygame.image.load("Project/Snake-game-project/[CITYPNG.COM]HD Bomb Boom Comic Cartoon Explosion PNG - 1000x1000.png")
         self.boom_image = pygame.transform.scale(self.boom_image, (100, 100))
         self.boom_display_time=0
         
-
-    def is_safe(self,row,col):
+    #A* algorithm part:
+    
+    def is_safe(self,row,col):     #check if snake's position is within safe boundaries
         return (1<=row<21) and (1<=col<21)
     
-    def snake_body_collision(self, row, col, snake_body):
+    def snake_body_collision(self, row, col, snake_body):  #check if snake's body collides with itself at a give position
         for block in snake_body:
             if Vector2(row, col) == block:
                 return False
         return True
 
-    def fruit_eaten(self,row,col,fruit_pos):
+    def fruit_eaten(self,row,col,fruit_pos):     
         return row== int(fruit_pos[0]) and col == int(fruit_pos[1])
 
-    def h_value_calculation(self,row,col, fruit_pos):
+    def h_value_calculation(self,row,col, fruit_pos):    #calculate the manhattan distance value as h
         return abs(row-fruit_pos[0])+abs(col-fruit_pos[1])
 
-    #def draw_path()
-    def reconstruct_path(self,block_inf, fruit_pos):
+    
+    def reconstruct_path(self,block_inf, fruit_pos):     #reconstructs the path from fruit to the snake's head current position
         path=[]
         direction = []
-        current_i,current_j= map(int, fruit_pos)
+        current_i,current_j= map(int, fruit_pos)         #start from the fruit position(we are going backward)
         
+        #continue tracking back until the current cell no longer has a parent
         while block_inf[current_i-1][current_j-1].parent_i != current_i or block_inf[current_i-1][current_j-1].parent_j != current_j:
             path.append((current_i,current_j))
             direction.append(block_inf[current_i-1][current_j-1].dir)
+            #update current position to its parent
             temporary_i=block_inf[current_i-1][current_j-1].parent_i
             temporary_j=block_inf[current_i-1][current_j-1].parent_j
             current_i , current_j =temporary_i ,temporary_j
@@ -71,8 +75,11 @@ class Main:
     def ai_search(self, start_point, fruit_pos):
         visited_blocks=[[False for _ in range(20)] for _ in range(20)] 
         block_inf=[[Block() for _ in range(20)] for _ in range(20)]
+        
         fruit_pos = (int(fruit_pos[0]), int(fruit_pos[1]))
         i,j= map(int, start_point)
+        
+        #set the start block's costs to 0
         block_inf[i -1][j- 1].f=0
         block_inf[i- 1][j-1].g=0
         block_inf[i-1][j-1].h=0
@@ -87,10 +94,10 @@ class Main:
         all_path = False
         
        
-        while open_list:
-            best_block=heapq.heappop(open_list)
+        while open_list:       #while there are nodes to process
+            best_block=heapq.heappop(open_list)     #get block with lowest f cost
             i,j=best_block[1],best_block[2]
-            visited_blocks[i- 1][j-1]=True
+            visited_blocks[i- 1][j-1]=True          #mark block as visited
             
             possible_moves= [(0, 1), (0, -1), (1, 0), (-1, 0)]
             
@@ -100,9 +107,9 @@ class Main:
                 
                 
                 if self.is_safe(next_i,next_j) and self.snake_body_collision(next_i, next_j, self.snake.body):
-                    if visited_blocks[next_i-1][next_j-1]: continue
+                    if visited_blocks[next_i-1][next_j-1]: continue   #skip visited blocks already
 
-                    if self.fruit_eaten(next_i, next_j, fruit_pos):
+                    if self.fruit_eaten(next_i, next_j, fruit_pos):   #if the move reaches the fruit
                         block_inf[next_i-1][next_j-1].parent_i = i
                         block_inf[next_i-1][next_j-1].parent_j = j
                         block_inf[next_i-1][next_j-1].dir = move
@@ -111,11 +118,12 @@ class Main:
                         return 
 
                     
-                    else:
+                    else:       #calculate costs for this block
                         g_new=block_inf[i-1][j-1].g+1.0
                         h_new=self.h_value_calculation(next_i,next_j,fruit_pos)
                         f_new=g_new+h_new
                         
+                        #update the block if a better path is found
                         if block_inf[next_i-1][next_j-1].f==float("inf") or block_inf[next_i-1][next_j-1].f>f_new:
                             heapq.heappush(open_list,(f_new,next_i,next_j))
                             block_inf[next_i-1][next_j-1].f=f_new
@@ -125,11 +133,12 @@ class Main:
                             block_inf[next_i-1][next_j-1].parent_j=j
                             block_inf[next_i-1][next_j-1].dir=move
                     
-        if not fruit_found:
-            return True
+        if not fruit_found:  #no path found
+            return True     
     
+    #designing a backuo path finding strategy if the optimal path is not available
     def backup_path(self, start_point):
-        i, j = map(int, start_point)
+        i, j = map(int, start_point)    
         possible_moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
         max_free_space = -1
         best_move = None
@@ -144,7 +153,7 @@ class Main:
                     best_move = move
         return best_move
     
-    def calculate_free_space(self, i, j):
+    def calculate_free_space(self, i, j):     #calculate free space around a given position for when there is no optimal path to reach the fruit right awat
         visited = set()
         stack = [(i, j)]
         free_space = 0
@@ -171,21 +180,21 @@ class Main:
         self.check_collision()
         self.draw_elements()
 
-    def check_fruit_pos(self):
+    def check_fruit_pos(self):    #varify if the fruit's position overlaps with snake's body
         for block in self.snake.body:
             if self.fruit.pos == block:
                 return False
 
         return True
     
-    def check_pepper_pos(self):
+    def check_pepper_pos(self):  #varify if the pepper's position overlaps with snake's body or fruit's position
         for block in self.snake.body:
             if self.bonus.pos == block or self.bonus.pos==self.fruit.pos:
                 return False
 
         return True
 
-    def draw_path(self):
+    def draw_path(self):        #draw the path tha snake is going to follow from A* algorithm
         self.final_path = self.path
         if self.final_path != None:
             for point in self.final_path[:]:
@@ -193,8 +202,9 @@ class Main:
                 path_rect = pygame.Rect(int((point[0])*40), int((point[1])*40), 40, 40)
                 pygame.draw.circle(game_screen, "Red", ((int((point[0]+0.5)*40), int((point[1]+0.5)*40))), 5)
 
-    def draw_elements(self):
-        self.count_down += 1
+    def draw_elements(self):   #draw all the elements(snake,fruits,score,pepper)
+        self.count_down += 1   #as a simple timer to manage the duration of temporary visual effects in the game
+        
         score_texts={
             "apple":"+5",
             "strawberry":"+5",
@@ -209,14 +219,11 @@ class Main:
             game_screen.blit(fruit_score, fruit_score_rect)
         
         
-        # if self.boom_display_time>0:
-        #     boom_rect = self.boom_image.get_rect(center=(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40) - 40))  
-        if self.boom_display_time > 0:
-        # Position the boom image in front of the snake's head depending on its direction
+        if self.boom_display_time > 0:   #draw explosion effect when pepper is eaten
              
-            if self.snake.direction == Vector2(1, 0) or Vector2(-1,0):  
+            if self.snake.direction == Vector2(1, 0) or Vector2(-1,0):   #horizontal movement
                 boom_rect = self.boom_image.get_rect(center=(int(self.snake.body[0].x * 40) + 40, int(self.snake.body[0].y * 40)-40)) 
-            elif self.snake.direction == Vector2(0, -1) or Vector2(0,1):  
+            elif self.snake.direction == Vector2(0, -1) or Vector2(0,1):   #vertical movement
                 boom_rect = self.boom_image.get_rect(center=(int(self.snake.body[0].x * 40)-60, int(self.snake.body[0].y * 40)))  
 
             game_screen.blit(self.boom_image, boom_rect)
@@ -224,12 +231,14 @@ class Main:
              
         self.draw_path()
         self.fruit.draw_fruit()
-        if not ai_state:
+        
+        if not ai_state:    #draw pepper only in non-ai mode
             if self.bonus.pepper_index == 1: self.bonus.draw_pepper()
         self.snake.draw_snake()
 
         bonus_text = game_font_1.render("Warning: Bonus is finishing!", True, text_color)
         bonus_text_rect = bonus_text.get_rect(center=(440, 100))
+        
         if self.bonus_count_down >=3:
             game_screen.blit(bonus_text, bonus_text_rect)
 
@@ -240,13 +249,16 @@ class Main:
         if tutorial:
             game_screen.blit(home, home_rect)
         
-    def check_collision(self):
+    
+    #hanndle collisions between snake, fruits, pepper and wall
+    def check_collision(self): 
         global ai_state, blinking_speed, snake_color
         prev_blinking_speed = blinking_speed
         prev_snake_color = snake_color
+        
         snake_head_rect = pygame.Rect(int(self.snake.body[0].x * 40), int(self.snake.body[0].y * 40), 40, 40)
     
-        if snake_head_rect.colliderect(self.fruit.rect):
+        if snake_head_rect.colliderect(self.fruit.rect):    #check if the snake eats the fruit
             if ai_state and not tutorial: 
                 self.bonus_count_down += 1
                 if self.bonus_count_down >= 5:
@@ -256,7 +268,9 @@ class Main:
                     ai_state = False
                     blinking_speed = prev_blinking_speed
                     self.snake.snake_color = prev_snake_color
-            if self.fruit.fruit_index//3 == 0: 
+            
+            #add to the score and snake length based on th fruit that is eaten        
+            if self.fruit.fruit_index == 0: 
                 self.score += 5
                 self.snake.add_block()
                 self.eaten = "apple"
@@ -286,6 +300,7 @@ class Main:
                 self.eaten  ="mango"
                 self.count_down = 0
 
+            #randomize fruit and pepper positions
             self.fruit.randomize()
             self.bonus.index_randomize()
             
@@ -297,7 +312,7 @@ class Main:
             
             self.snake.play_eating_sound()
             
-            if ai_state:
+            if ai_state:   #recompute ai path after eating the fruit
                 self.path = None  # Clear the path
                 self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
 
@@ -307,13 +322,15 @@ class Main:
 
             self.boom_display_time=120
             
-            for _ in range(3): self.snake.add_block()
+            for _ in range(3): self.snake.add_block()  #add 3 blocks to snake's body
+            
             self.bonus.randomize()
             self.bonus.index_randomize()
-            
             self.snake.bonus_sound.play()
+            
             while not self.check_pepper_pos():
                 self.bonus.randomize()
+                
             ai_state = True
             pygame.time.set_timer(update_screen, 80)
             prev_blinking_speed = blinking_speed
@@ -329,26 +346,33 @@ class Main:
         self.button_click_sound.play()
         
     def snake_moving_ai(self):
+        
         self.snake.last_body = self.snake.body[:]
+        
         if not self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos)):
             self.directions = self.direction
+            
             if self.directions and len(self.directions) > 0:
-                self.snake.direction = Vector2(self.directions.pop(0))
+                self.snake.direction = Vector2(self.directions.pop(0)) #set the snake's direction to the next step of path
                 self.snake.last_body = self.snake.body[:]
-                if self.snake.new_block==True:
+                
+                if self.snake.new_block==True:     #check if the snake has grown by eating a fruit
                     prev_body=self.snake.body[:]
-                    prev_body.insert(0,prev_body[0]+self.snake.direction)
+                    prev_body.insert(0,prev_body[0]+self.snake.direction) #a new head is added
                     new_body=prev_body
-                    self.snake.body=new_body[:] 
+                    self.snake.body=new_body[:]   #update the snake's body with thenew block
                     self.snake.new_block = False
-                else:
-                    prev_body=self.snake.body[:-1]
+                    
+                else:                                #if there is no collisio with fruit yet
+                    prev_body=self.snake.body[:-1]   #move the snake by removing the tail and adding a nnew head
                     prev_body.insert(0,prev_body[0]+self.snake.direction)
                     new_body=prev_body
                     self.snake.body=new_body[:]
-        else:
+                    
+        else:       #use a backup path finding strategy if no optimal path is found
             best_move = self.backup_path(tuple(self.snake.body[0]))
-            if best_move:
+            
+            if best_move:  #if backup strategy worked, move the snake i the best move direction
                 self.snake.direction = Vector2(best_move)
                 prev_body=self.snake.body[:-1]
                 prev_body.insert(0,prev_body[0]+self.snake.direction)
@@ -356,7 +380,7 @@ class Main:
                 self.snake.body=new_body[:]
                 self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
             
-            else:
+            else:        #continue moving in the new direction if no valid path exists
                 prev_body=self.snake.body[:-1]
                 prev_body.insert(0,prev_body[0]+self.snake.direction)
                 new_body=prev_body
@@ -364,7 +388,6 @@ class Main:
                 self.ai_search(tuple(self.snake.body[0]), tuple(self.fruit.pos))
 
                 
-
 class Fruits:
     def __init__(self):
         self.apple = pygame.image.load("Project/Snake-game-project/apple1.png").convert_alpha()
