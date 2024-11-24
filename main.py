@@ -32,8 +32,8 @@ class Main:     #containing snakke, fruit and AI logic
         self.boom_image=pygame.image.load("Project/Snake-game-project/[CITYPNG.COM]HD Bomb Boom Comic Cartoon Explosion PNG - 1000x1000.png")
         self.boom_image = pygame.transform.scale(self.boom_image, (100, 100))
         self.boom_display_time=0
-        self.mango_bonus = False
-        self.mango_count_down  =0 
+        self.mango_bonus = False    #flag indicating if mango bonus is active
+        self.mango_count_down  =0   #timer for mango bonus duration
         
     #A* algorithm part:
     
@@ -221,6 +221,7 @@ class Main:     #containing snakke, fruit and AI logic
          
         if self.mango_bonus:
             self.mango_count_down += 1
+            #displaying mango bonus massage
             mango_eaten = game_font_1.render("+15; Mango has been eaten!", True, text_color)
             mango_eaten_rect = mango_eaten.get_rect(center = (440, 110))
             game_screen.blit(mango_eaten, mango_eaten_rect)
@@ -241,7 +242,7 @@ class Main:     #containing snakke, fruit and AI logic
         if not ai_state:    #draw pepper only in non-ai mode
             if self.bonus.bonus_index == 1: self.bonus.draw_bonus()
 
-        if self.bonus.bonus_index == 2: self.bonus.draw_bonus()
+        if self.bonus.bonus_index == 2: self.bonus.draw_bonus()    #draw mango randomly both in ai and player mode
         self.snake.draw_snake()
 
         bonus_text = game_font_1.render("Warning: Bonus is finishing!", True, text_color)
@@ -254,7 +255,7 @@ class Main:     #containing snakke, fruit and AI logic
             self.eaten = None
             self.count_down = 0
             
-        if self.mango_count_down > 60:
+        if self.mango_count_down > 60:  #dactivate mango bonus after 60 cycles 
             self.mango_bonus = False
             self.mango_count_down = 0
 
@@ -345,8 +346,8 @@ class Main:     #containing snakke, fruit and AI logic
                 self.snake.snake_color = "Red"
             
             elif self.bonus.bonus_index == 2:
-                self.mango_bonus = True
-                self.score += 15
+                self.mango_bonus = True   #activate mango bonus
+                self.score += 15          
                 for _ in range(3): self.snake.add_block()  #add 3 blocks to snake's body
                 
                 self.bonus.randomize()
@@ -360,7 +361,7 @@ class Main:     #containing snakke, fruit and AI logic
     def play_botton_click(self):
         self.button_click_sound.play()
 
-    def best_goal(self):
+    def best_goal(self):  #determine the best target(mango or other fruits) for the snake based on its distance to target
         
         if self.bonus.bonus_index == 2:
             scores = {
@@ -370,10 +371,13 @@ class Main:     #containing snakke, fruit and AI logic
                 3 :10,
                 4 :15
             }
+            
+            #calculate bonus point for mango based on its score and h value
             bonus_point = 15 /self.h_value_calculation(int(self.snake.body[0].x), int(self.snake.body[0].y), self.bonus.pos)
+            #calculate bonus point for other fruits
             fruit_point = scores[self.fruit.fruit_index] / self.h_value_calculation(int(self.snake.body[0].x), int(self.snake.body[0].y), self.fruit.pos)
 
-            if bonus_point > fruit_point:
+            if bonus_point > fruit_point:   #choose the best target based on their points
                 return self.bonus.pos
         return self.fruit.pos  
         
@@ -493,7 +497,7 @@ class Snake:
         self.self_hitting_sound=pygame.mixer.Sound("Project/Snake-game-project/self-hitting-230542.mp3")
         self.game_over_sound=pygame.mixer.Sound("Project/Snake-game-project/game-over-89697.mp3")
         self.pepper_sound=pygame.mixer.Sound("Project/Snake-game-project/supernatural-explosion-104295.mp3")
-        self.mango_sound=pygame.mixer.Sound("Project/Snake-game-project/mango_sound.mp3")
+        self.mango_sound=pygame.mixer.Sound("Project/Snake-game-project/sound-effect-twinklesparkle-115095.mp3")
         
     def draw_snake(self):    #draw the snake on the game screen
         
@@ -720,10 +724,11 @@ class Bonus:
         self.bonus_index = 0
 
     def draw_bonus(self):
-        #set the rect for collision
-        if self.bonus_index == 1:
+        #determine to display which bous based on their index
+        if self.bonus_index == 1: 
             self.rect = self.pepper.get_rect(center = (int((self.pos.x + 0.5)*40), int((self.pos.y+0.5)*40)))
             game_screen.blit(self.pepper, self.rect) #draw the pepper on the screen
+        
         elif self.bonus_index == 2:
             self.rect = self.mango.get_rect(center = (int((self.pos.x + 0.5)*40), int((self.pos.y+0.5)*40)))
             game_screen.blit(self.mango, self.rect) #draw the mango on the screen
