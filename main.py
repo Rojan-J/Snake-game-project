@@ -390,6 +390,8 @@ class Main:     #containing snakke, fruit and AI logic
                 
 class Fruits:
     def __init__(self):
+        
+        #load fruit images and scale them
         self.apple = pygame.image.load("Project/Snake-game-project/apple1.png").convert_alpha()
         self.apple = pygame.transform.scale(self.apple, (40, 40))
         
@@ -405,19 +407,24 @@ class Fruits:
         self.mango = pygame.image.load("Project/Snake-game-project/mango.png").convert_alpha()
         self.mango = pygame.transform.scale(self.mango, (40, 40))
 
+        #set initial fruit positions and index
         self.x= random.randint(1,19)
         self.y= random.randint(1,19)
         self.pos=Vector2(self.x,self.y)
-        self.rect = pygame.Rect(-1, -1, 1, 1)
-        self.fruit_index = 0
+        self.rect = pygame.Rect(-1, -1, 1, 1)   #rec for collision detection
+        self.fruit_index = 0   #determines the type of fruit which is going to display
 
     def draw_fruit(self):       
         fruit = [self.apple, self.strawberry, self.pineapple, self.blueberry, self.mango]
         surf = fruit[self.fruit_index]
+        
+        #set the rect for the chosen fruit for its collision detection
         self.rect = surf.get_rect(center = (int((self.pos.x + 0.5)*40), int((self.pos.y+0.5)*40)))
-        game_screen.blit(surf, self.rect)
+        game_screen.blit(surf, self.rect)   #draw the fruit on the game screen
         
     def randomize(self):
+        #choose the fruit type that is going to display
+        #fruits with higher score has a bit less chance to display on the screen
         self.fruit_index = random.choices([0,1,2,3,4],weights=[25,25,20,20,10])[0]
         if self.fruit_index in [1, 2, 4]: y_border = 19
         else: y_border = 20
@@ -431,6 +438,7 @@ class Fruits:
 
         
 class Snake:
+    #load the different phases of snake's eyes( to show its blinking) and its tongue and scale them 
     def __init__(self, snake_color):
         open_eyes = pygame.image.load("Project/Snake-game-project/eyes3.png").convert_alpha()
         open_eyes_scaled = pygame.transform.scale(open_eyes, (40, 40))
@@ -443,8 +451,9 @@ class Snake:
 
         end_eye = pygame.image.load("Project/Snake-game-project/end_eye.png")
     
+        #initialize snake's body with 3 blocks
         self.body = [Vector2(5,10),Vector2(4,10),Vector2(3,10)]
-        self.direction = Vector2(1,0)
+        self.direction = Vector2(1,0)  #snake initially is moving to the right
         self.last_body = None
         self.new_block=False
         self.eyes = [open_eyes_scaled, close_eyes_scaled]
@@ -454,13 +463,15 @@ class Snake:
         self.tongue_index = 0
         self.snake_color = snake_color
         
+        #load sound effects for various actions
         self.eating_sound=pygame.mixer.Sound("Project/Snake-game-project/apple-munch-40169 (mp3cut.net).mp3")
         self.hitting_wall_sound=pygame.mixer.Sound("Project/Snake-game-project/hitting-wall-85571 (mp3cut.net).mp3")
         self.self_hitting_sound=pygame.mixer.Sound("Project/Snake-game-project/self-hitting-230542.mp3")
         self.game_over_sound=pygame.mixer.Sound("Project/Snake-game-project/game-over-89697.mp3")
         self.bonus_sound=pygame.mixer.Sound("Project/Snake-game-project/supernatural-explosion-104295.mp3")
         
-    def draw_snake(self):
+    def draw_snake(self):    #draw the snake on the game screen
+        
         for index, block in enumerate(self.body):
             x=int(block.x *40)
             y=int(block.y*40)
@@ -471,8 +482,10 @@ class Snake:
                 # Determine which corners to round based on direction
                 if self.direction == Vector2(1, 0):  # Moving right
                     pygame.draw.rect(game_screen, self.snake_color, block_rect, border_top_right_radius=10, border_bottom_right_radius= 10)  # Top-right corner
+                    #draw eyes on the snake's head
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
+                    
                     if int(self.tongue_index) == 0:
                         rotated_tongue = pygame.transform.rotate(self.tongue, 180)
                         pygame.draw.circle(game_screen, "Black", (x + 35, y+25), 5, 5)
@@ -488,6 +501,7 @@ class Snake:
                     pygame.draw.rect(game_screen, self.snake_color, block_rect, border_top_left_radius=10, border_bottom_left_radius= 10)  # Top-left corner
                     eyes_scaled = pygame.transform.rotate(self.eyes[int(self.eyes_index)], 0)
                     eyes_rect = eyes_scaled.get_rect(center=(x + 20, y))
+                    
                     if int(self.tongue_index) == 0:
                         pygame.draw.circle(game_screen, "Black", (x +5, y+25), 5, 5)
                         rotated_tongue= pygame.transform.rotate(self.tongue, 0)
@@ -530,10 +544,13 @@ class Snake:
 
 
                 game_screen.blit(eyes_scaled, eyes_rect)
+                
+                #cycle through eye animations(blinking and hitting the wall phase)
                 if int(self.eyes_index) == 0: self.eyes_index += 0.02
                 else: self.eyes_index += 0.05
                 if self.eyes_index > 2: self.eyes_index = 0
 
+                #cycle through tongue animations
                 self.tongue_index += 0.02
                 if self.tongue_index > 2: self.tongue_index = 0
 
@@ -545,16 +562,16 @@ class Snake:
                 prev_block=self.body[index-1]
                 direction=block-prev_block
                 
-                if direction==pygame.Vector2(1,0):
+                if direction==pygame.Vector2(1,0):  #moving right
                     pygame.draw.circle(game_screen, self.snake_color, (x, y + 20), 20)  # Rounded tail
                 
-                elif direction==pygame.Vector2(-1,0):
+                elif direction==pygame.Vector2(-1,0):  #moving left
                     pygame.draw.circle(game_screen, self.snake_color, (x + 40, y + 20), 20)
                 
-                elif direction==pygame.Vector2(0,1):
+                elif direction==pygame.Vector2(0,1):  #moving down
                     pygame.draw.circle(game_screen, self.snake_color, (x + 20, y), 20)
                 
-                elif direction==pygame.Vector2(0,-1):
+                elif direction==pygame.Vector2(0,-1):  #moving up
                     pygame.draw.circle(game_screen, self.snake_color, (x + 20, y + 40), 20)
                 
     def draw_end_snake(self):
@@ -622,30 +639,33 @@ class Snake:
                 else:
                     pygame.draw.rect(game_screen,self.snake_color,block_rect)
                     
-    def undo(self):
-        self.body = self.last_body
+    def undo(self):  #undo the snake's last move when collision happen
+        self.body = self.last_body  #reset the body to its previous state
 
 
     def snake_moving(self):
-        self.last_body = self.body[:]
-        if self.new_block==True:
+        self.last_body = self.body[:]  #save the current body if undoing is needed
+        
+        if self.new_block: #add a new block at the front if a fruit was eaten
             prev_body=self.body[:]
-            prev_body.insert(0,prev_body[0]+self.direction)
+            prev_body.insert(0,prev_body[0]+self.direction) #extendig the head
             new_body=prev_body
             self.body=new_body[:] 
             self.new_block = False
-        else:
-            prev_body=self.body[:-1]
-            prev_body.insert(0,prev_body[0]+self.direction)
+            
+        else:  #normal moving/ no fruit was eaten
+            prev_body=self.body[:-1]  #remove the tail
+            prev_body.insert(0,prev_body[0]+self.direction) #move the head
             new_body=prev_body
-            self.body=new_body[:] 
+            self.body=new_body[:] #update the body
 
 
             
             
-    def add_block(self):
+    def add_block(self):  #for when a fruit was eaten
         self.new_block=True
         
+    #play sound effects    
     def play_eating_sound(self):
         self.eating_sound.play()
         
@@ -664,17 +684,19 @@ class Pepper:
         self.x= random.randint(1,19)
         self.y= random.randint(1,19)
         self.pos=Vector2(self.x,self.y)
-        self.rect = pygame.Rect(-1, -1, 1, 1)
+        self.rect = pygame.Rect(-1, -1, 1, 1)  #preholder rect for collisionn
         self.pepper_index = 0
 
     def draw_pepper(self):
+        #upload and scale the bonus image
         pepper = pygame.image.load("Project/Snake-game-project/pepper.png").convert_alpha()
         pepper = pygame.transform.scale(pepper, (27, 40))
+        #set the rect for collision
         self.rect = pepper.get_rect(center = (int((self.pos.x + 0.5)*40), int((self.pos.y+0.5)*40)))
-        game_screen.blit(pepper, self.rect)
+        game_screen.blit(pepper, self.rect)  #draw the pepper on the screen
 
     def index_randomize(self):
-        self.pepper_index = random.randint(0,8)
+        self.pepper_index = random.randint(0,8)   #chooose the random index for the pepper( the pepper is going to display only if 1 was selected)
         
     def randomize(self):
         self.x= random.randint(1,20)
@@ -682,10 +704,11 @@ class Pepper:
         self.pos=Vector2(self.x,self.y)
         
 
-
+# set game settings(background, snake color setting, speed and etc...)
 def settings():
     global snake_color, background, difficulty, game_state, text_color, blinking_speed, light_bg, night_bg
 
+    #in the first part we are going to display labels, icons and define scaled rects and positions for them in the setting screen
     background_text = game_font_2.render("Background", True, "Black")
     background_text_rect = background_text.get_rect(center=(440, 60))
 
@@ -743,16 +766,20 @@ def settings():
     selected_speed_rect = [slow_text_rect, medium_text_rect, fast_text_rect]
     selected_speed_index = 1
 
+    #define bottons for starting the game and returning to the home page
     start = game_font_2.render("Start", True, "Black")
     start2_rect = pygame.Rect(540, 760, 200, 100)
 
     home = game_font_2.render("Home Page", True, "Black")
     home_rect = pygame.Rect(140, 760, 200, 100)
 
+    #setting screen loop
     while True:
-        game_screen.fill("#bbff86")
-        game_screen.blit(background_text, background_text_rect)
+        game_screen.fill("#bbff86")  #fill the screen with a light green background
+        game_screen.blit(background_text, background_text_rect)  #display background
 
+        #display selection icons :
+        
         game_screen.blit(light_bg_icon, light_bg_icon_rect)
         game_screen.blit(night_bg_icon, night_bg_icon_rect)
 
@@ -768,11 +795,15 @@ def settings():
 
         add_buttomn(game_screen, start2_rect, start)
         add_buttomn(game_screen, home_rect, home)
+        
+        #process events for interactivity
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+                
             if event.type == pygame.MOUSEBUTTONDOWN:
+                #control background selection
                 if light_bg_icon_rect.collidepoint(event.pos):
                     selected_bg_index = 0
                     background = pygame.transform.scale(light_bg, (800, 800))
@@ -783,6 +814,7 @@ def settings():
                     background = pygame.transform.scale(night_bg, (800, 800))
                     text_color = "White"
 
+                #control snake's color selection
                 if snake_green.collidepoint(event.pos):
                     selected_color_index = 0
                     snake_color = "#5a6f19"     #Green
@@ -794,7 +826,8 @@ def settings():
                 if snake_blue.collidepoint(event.pos):
                     selected_color_index = 2
                     snake_color = "#23d4df"     #Blue
-
+                    
+                #control speeed selection
                 if slow_rect.collidepoint(event.pos):
                     selected_speed_index = 0
                     difficulty = 200
@@ -813,14 +846,16 @@ def settings():
                     blinking_speed = 80
                     pygame.time.set_timer(update_screen, difficulty)
 
+                #starting the game botton in the setting screen
                 if start2_rect.collidepoint(event.pos):
                     main.play_botton_click()
-                    game_over_sound_played=False
+                    game_over_sound_played=False  #control the sounds and game over part to not show up
                     game_over_start_time=None
                     pygame.mixer.music.stop()
                     ai_state=False
-                    return True
+                    return True  #start the game
                 
+                #returning to home page botton
                 if home_rect.collidepoint(event.pos):
                     main.play_botton_click()
                     background = default_background
@@ -828,8 +863,9 @@ def settings():
                     text_color = "Black"
                     difficulty = 150
                     blinking_speed = 60
-                    return False
+                    return False  #return to home page
                 
+        #draw selected items in setting screen with red borders        
         pygame.draw.rect(game_screen, "Red", selected_bg[selected_bg_index], width= 3)
         pygame.draw.rect(game_screen, "Red", selected_color[selected_color_index], width= 3)
         game_screen.blit(selected_speed[selected_speed_index], selected_speed_rect[selected_speed_index])
@@ -839,7 +875,7 @@ def settings():
 
         pygame.display.update()
                 
-
+#iitialize global game states
 game_state = False
 start_page = True
 tutorial = False
@@ -848,37 +884,42 @@ ai_state = False
 
 def check_game_over(main):
     global game_state
+    #check for collision with the snake's own body
     for block in main.snake.body[1:]:
         if block == main.snake.body[0]:
-            main.snake.play_self_hitting()
-            game_state = False
+            main.snake.play_self_hitting()  #play self hitting collision sound
+            game_state = False   #end the game
+    
+    #check for collision with the walll
     if not 1<= main.snake.body[0].y < 21 or not 1<= main.snake.body[0].x < 21:
-        main.snake.play_hitting_wall()
+        main.snake.play_hitting_wall()  #play wall hitting collsion sound
         game_state = False
 
 
-pygame.mixer.pre_init(44100,-16,2,512)
+pygame.mixer.pre_init(44100,-16,2,512)   #pre initialize soundtrack setting
 
-pygame.init()
+pygame.init()   #initialize pygame
 pygame.mixer.init()
 pygame.mixer.music.load("Project/Snake-game-project/Sneaky-Snitch(chosic.com).mp3")
 
+#game screen setup
 game_screen=pygame.display.set_mode((880,880),pygame.RESIZABLE | pygame.SCALED)   #pygame.scaled is added to prevent full screen problems
 pygame.display.set_caption("Snake")
 surface=pygame.Surface((400,400))
+
+#load backgrounds
 light_bg = pygame.image.load("Project/Snake-game-project/bg4.png").convert_alpha()
 night_bg = pygame.image.load("Project/Snake-game-project/night4.jpeg").convert_alpha()
 default_background = pygame.transform.scale(light_bg, (800, 800))
 
-snake_color = "#5a6f19"
-background = default_background
+#default settings
+snake_color = "#5a6f19"    #default snake color(green)
+background = default_background   
 difficulty = 150
 blinking_speed = 60
 text_color = "Black"
 
-# fruit=Fruits()
-# snake=Snake()
-
+#create a clock object to control the game's timing and frame rate
 clock=pygame.time.Clock()
 
 #Fonts
@@ -889,7 +930,7 @@ game_font_3 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf"
 game_font_4 = pygame.font.Font("Project/Snake-game-project/JungleAdventurer.ttf", 100) #game_over_scores 
 
 
-#Start Page
+#Start Page setup
 start_surf = pygame.image.load("Project/Snake-game-project/start_page.jpg").convert_alpha()
 start_surf = pygame.transform.scale(start_surf, (880, 880))
 
@@ -905,11 +946,12 @@ start_rect = pygame.Rect(140, 490, 200, 100)
 tutorial_click = game_font_2.render("Tutorial", True, "Black")
 tutorial_rect = pygame.Rect(140, 640, 200, 100)
 
+#set home botton to put in tutorial screen
 home = pygame.image.load("Project/Snake-game-project/home.png")
 home = pygame.transform.scale(home, (40, 40))
 home_rect = home.get_rect(center=(440, 860))
 
-
+#create bottons with shadows
 def add_buttomn(screen, rect, text, rect_color = "White", shadow_color = "#979797"):
     shadow_rect = pygame.Rect(rect.x + 5, rect.y + 5, 200, 100)
     text_rect = text.get_rect(center= (rect.center))
@@ -918,13 +960,15 @@ def add_buttomn(screen, rect, text, rect_color = "White", shadow_color = "#97979
     game_screen.blit(text, text_rect)
 
 update_screen=pygame.USEREVENT
-pygame.time.set_timer(update_screen,150)
+pygame.time.set_timer(update_screen,150)  #set up a timer event that triggers every 150ms
 
 
 
 main=Main(snake_color)
+
+#display score on the game screen
 def display_score(main):
-    score = main.score
+    score = main.score  #get the current score from thr main game 
     score_text = game_font_3.render(f"Score: {score}", True, "White")
     score_text_rect = score_text.get_rect(midleft = (60, 20))
     game_screen.blit(score_text, score_text_rect)
@@ -933,27 +977,29 @@ def display_score(main):
 game_over_start_time=None
 game_over_sound_played=False
 
-tutorial_speed = 90
+tutorial_speed = 90  #set tutorial speed
 
+
+
+#main game loop( it runs until the game ends)
 while True:
-    if not game_state:
+    if not game_state:  #check if the game is not in the play
         if not start_page:
             ai_state=False
             main.snake.undo()
-            main.snake.draw_end_snake()
-            #Gameover Page
+            main.snake.draw_end_snake()  #draw the snake in its final state
             
-            if game_over_start_time is None:
-                game_over_start_time=pygame.time.get_ticks()
+            if game_over_start_time is None:   #game over page after collision with itself or wall
+                game_over_start_time=pygame.time.get_ticks()  #record the time when gameover starts
                 
             elapsed_time=pygame.time.get_ticks()-game_over_start_time
             
-            if elapsed_time>=1000:
+            if elapsed_time>=1000:   #display gameover screen after 1s delay (to avoid the sound effects of collision and game over to be mixed)
                 if not game_over_sound_played:
                     main.snake.play_game_over()
-                    game_over_sound_played=True
+                    game_over_sound_played=True   #mark the game over sound as played
                     
-                
+                #create the game over text ,score and bottons
                 game_over_title = game_font.render("Game Over!", True, text_color)
                 if ai_state: game_over_rect = game_over_title.get_rect(center= (440, 120))
                 else: game_over_rect = game_over_title.get_rect(center= (440, 240))
@@ -968,26 +1014,28 @@ while True:
                 no_path_rect = no_path_text.get_rect(center = (440, 260))
                 last_score_text = game_font_4.render(f"Score: {main.score}", True, text_color)
                 last_score_rect = last_score_text.get_rect(center= (440, 390))
+                
                 game_screen.blit(last_score_text, last_score_rect)
                 game_screen.blit(game_over_title, game_over_rect)
                 game_screen.blit(restart, restart_rect)
                 add_buttomn(game_screen, home_page_click_rect, home_page)
                 if ai_state: game_screen.blit(no_path_text, no_path_rect)
-            for event in pygame.event.get():
+                
+            for event in pygame.event.get():  #handle events during gameover screen
                 if event.type==pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 
                 if event.type ==pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
+                    if event.key == pygame.K_SPACE:  #restart the game when space key is pressed
                         game_state = True
-                        main = Main(snake_color)
-                        game_over_sound_played=False
-                        game_over_start_time=None
-                        start_page = False
+                        main = Main(snake_color)   #create a new main game object
+                        game_over_sound_played=False   #reset sound flag 
+                        game_over_start_time=None     #reset timer
+                        start_page = False      #switch to main game state
 
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.MOUSEBUTTONDOWN:   #home botton click event
                     if home_page_click_rect.collidepoint(event.pos):
                         main.play_botton_click()
                         background = default_background
@@ -998,12 +1046,15 @@ while True:
                         difficulty = 60
                         game_state = False
                         main.score =0
-                        start_page = True
+                        start_page = True    #return to start page
+       
+        #start page (before game starts)       
         else:
             
-            if not pygame.mixer.music.get_busy():
-                pygame.mixer.music.play(-1) 
+            if not pygame.mixer.music.get_busy():   #play background music if not playing already
+                pygame.mixer.music.play(-1)         #put the background music in a loop
 
+            #create start game screen title and bottons
             game_screen.blit(start_surf, (0,0))
             game_screen.blit(start_title, start_title_rect)
             game_screen.blit(ronil_brand, ronil_brand_rect)
@@ -1016,21 +1067,21 @@ while True:
                     sys.exit()
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if start_rect.collidepoint(event.pos):
+                    if start_rect.collidepoint(event.pos):    #if start botton is clicked
                         main.play_botton_click()
-                        if settings():
+                        if settings():                        #show settig page
                             game_state = True
                             main = Main(snake_color)
                             start_page = False
                         
                         else:
                             game_state = False
-                            start_page = True
+                            start_page = True       #stay at the start page
                             
-                    elif tutorial_rect.collidepoint(event.pos):
-                        pygame.time.set_timer(update_screen, tutorial_speed)
+                    elif tutorial_rect.collidepoint(event.pos):   #if tutorial botton is clicked
+                        pygame.time.set_timer(update_screen, tutorial_speed)    #set update timer for tutorial
                         main.play_botton_click()
-                        pygame.mixer.music.stop()
+                        pygame.mixer.music.stop()     #stop background music for tutorial
                         tutorial = True
                         game_state = True
                         start_page = False
@@ -1040,31 +1091,32 @@ while True:
 
 
 
-
-    else:
+    #main game loop when the game is running
+    else:     
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
                 pygame.quit()
                 sys.exit()
                 
-            if event.type == update_screen:
+            if event.type == update_screen:  #update event for game progress
                 main.update()
                 
             #keyboard setting to move the snake
             if event.type ==pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_d:  #move right
                     if main.snake.direction.x !=-1:
                         main.snake.direction=Vector2(1,0)
-                if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_a:   #move left
                     if main.snake.direction.x !=1:
                         main.snake.direction=Vector2(-1,0)
-                if event.key == pygame.K_UP or event.key == pygame.K_w:
+                if event.key == pygame.K_UP or event.key == pygame.K_w:     #move up
                     if main.snake.direction.y !=1 :
                         main.snake.direction=Vector2(0,-1)
-                if event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                if event.key == pygame.K_DOWN or event.key == pygame.K_s:    #move down
                     if main.snake.direction.y !=-1:
                         main.snake.direction=Vector2(0,1)
-                if event.key == pygame.K_ESCAPE:
+                        
+                if event.key == pygame.K_ESCAPE:    #return to start page(esc key)
                     background = default_background
                     snake_color = "#5a6f19"
                     text_color = "Black"
@@ -1076,8 +1128,8 @@ while True:
                     start_page = True
 
             
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if home_rect.collidepoint(event.pos):
+            if event.type == pygame.MOUSEBUTTONDOWN:   
+                if home_rect.collidepoint(event.pos):   #if home botton is clicked
                     main.play_botton_click()
                     background = default_background
                     snake_color = "#5a6f19"
@@ -1090,16 +1142,18 @@ while True:
                     ai_state =False
                     pygame.time.set_timer(update_screen, difficulty)
                     
+        #fill the game screen with selected background color            
         game_screen.fill("#005e20")
-        back_rect = background.get_rect(topleft = (40, 40))
+        back_rect = background.get_rect(topleft = (40, 40))   #set a position for background
+        #display the background and current score
         game_screen.blit(background, back_rect)    
         display_score(main)    
 
-        #game_screen.fill((20,120,150))
+        #check if the game is over
         check_game_over(main)
         if game_state: main.draw_elements()  
     
     pygame.display.update()
     
     
-    clock.tick(blinking_speed)
+    clock.tick(blinking_speed)   #control the game's format rate
